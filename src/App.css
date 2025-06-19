@@ -1,0 +1,1090 @@
+/* Base Styles */
+:root {
+  /* Dark Theme */
+  --bg-dark: #1a1a1a;
+  --text-dark: #ffffff;
+  --user-bg-dark: #2a2a72;
+  --bot-bg-dark: #333333;
+  --input-bg-dark: #2d2d2d;
+  --title-dark: #ff6b6b;
+  --button-bg-dark: #20b2aa;
+  --sidebar-bg-dark: #222;
+  --button-width: 36px;
+  --button-gap: 20px;
+
+  /* Light Theme */
+  --bg-light: #f5f5f5;
+  --text-light: #333333;
+  --user-bg-light: #4a90e2;
+  --bot-bg-light: #e0e0e0;
+  --input-bg-light: #ffffff;
+  --title-light: #6c5ce7;
+  --button-bg-light: #6c5ce7;
+  --sidebar-bg-light: #f0f0f0;
+  --button-width: 582px;
+  --button-gap: 20px;
+}
+
+/* App Container */
+.app {
+  min-height: 100vh;
+  display: flex;
+  transition: background 0.3s ease, color 0.3s ease;
+  overflow: hidden; /* Prevent outer scrollbar */
+}
+
+.app.dark {
+  background: var(--bg-dark);
+  color: var(--text-dark);
+}
+
+.app.light {
+  background: var(--bg-light);
+  color: var(--text-light);
+}
+
+/* Sidebar Toggle Button */
+.sidebar-toggle {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 1000;
+  background: var(--button-bg-dark);
+  color: white;
+  padding: 10px;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.app.light .sidebar-toggle {
+  background: var(--button-bg-light);
+  color: var(--text-light);
+}
+
+.sidebar-toggle:hover {
+  transform: scale(1.1);
+}
+
+/* Sidebar */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -250px;
+  width: 250px;
+  height: 100vh;
+  background: var(--sidebar-bg-dark);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  transition: left 0.3s ease;
+  z-index: 999;
+  overflow: hidden; /* Ensure no part is visible when closed */
+}
+
+.app.light .sidebar {
+  background: var(--sidebar-bg-light);
+}
+
+.sidebar.open {
+  left: 0;
+}
+
+/* New Chat Button */
+.new-chat-button {
+  padding: 10px; /* Reduced padding for smaller size */
+  border: none;
+  border-radius: 50%; /* Circular shape */
+  background: #6c5ce7; /* Attractive background color */
+  color: white;
+  font-size: 1.2rem; /* Smaller symbol size */
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 45px; /* Reduced width for smaller size */
+  height: 45px; /* Reduced height for smaller size */
+  margin-top: 80px; /* Moved downward to avoid overlap with sidebar */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+}
+
+.new-chat-button:hover {
+  background: #8577e6; /* Slightly darker shade on hover */
+  transform: scale(1.1); /* Slight zoom effect */
+}
+
+.app.dark .new-chat-button {
+  background: #20b2aa; /* Dark mode background */
+}
+
+.app.dark .new-chat-button:hover {
+  background: #1e9c8f; /* Dark mode hover background */
+}
+
+/* Header */
+.header {
+  position: fixed;
+  height: 20px;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: inherit;
+  padding: 1rem 0;
+  backdrop-filter: blur(10px);
+}
+
+.heading {
+  color: var(--title-light);
+  font-size: 2.5rem;
+  margin: 0;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+  transition: color 0.3s ease;
+  text-align: center;
+}
+
+.app.dark .heading {
+  color: var(--title-dark);
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+  position: absolute; /* Positioned relative to the header */
+  right: 40px; /* Increased offset to prevent overlap */
+  top: 125%; /* Aligns vertically with the middle of the header */
+  transform: translateY(-50%); /* Centers it vertically */
+  font-size: 24px;
+  cursor: pointer;
+  background: var(--button-bg-dark);
+  color: white;
+  padding: 10px;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.app.light .theme-toggle {
+  background: var(--button-bg-light);
+  color: var(--text-light);
+}
+
+.theme-toggle:hover {
+  transform: scale(1.1);
+}
+/* Main Content */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem;
+  margin-left: 0; /* No shifting to the right */
+  transition: margin-left 0.3s ease;
+}
+
+.sidebar.open + .main-content {
+  margin-left: 250px; /* Adjusted for open sidebar */
+}
+
+/* Chat Container */
+.chatbot_container {
+  width: 100%;
+  max-width: 1250px;
+  height: calc(100vh - 160px); /* Account for header/footer */
+  margin: 0 auto;
+  border-radius: 20px;
+  padding: 25px;
+  background: #fff; /* Solid background for crisp edges */
+  border: 1px solid rgba(0, 0, 0, 0.12); /* Solid, visible border */
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  position: relative; /* For absolute positioning of children */
+  margin-top: 35px; /* Space for header */
+  /* Removed: backdrop-filter: blur(4px); */
+}
+
+.app.dark .chatbot_container {
+  background: #232323; /* Solid dark background */
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Chat Messages */
+.chatbot_response_container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0; /* Remove all padding */
+  margin: 0; /* Remove all margin */
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  height: 100%; /* Fill parent */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(120, 120, 120, 0.3) transparent;
+}
+
+.chatbot_response_container::-webkit-scrollbar {
+  width: 6px;
+  background: transparent;
+}
+
+.chatbot_response_container::-webkit-scrollbar-thumb {
+  background: rgba(120, 120, 120, 0.3);
+  border-radius: 4px;
+}
+
+.chatbot_response_container::-webkit-scrollbar-track {
+  background: transparent;
+}
+/* Updated Message Bubbles */
+.message {
+  max-width: 70%;
+  padding: 12px 20px;
+  border-radius: 20px;
+  margin-bottom: 15px;
+  animation: messageAppear 0.3s ease-out;
+  position: relative;
+}
+
+.message.user {
+  background: var(--user-bg-dark);
+  color: white;
+  margin-left: auto;
+  border-radius: 20px 20px 0 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.app.light .message.user {
+  background: var(--user-bg-light);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.message.bot {
+  background: var(--bot-bg-dark);
+  color: white;
+  margin-right: auto;
+  border-radius: 20px 20px 20px 0;
+  max-width: fit-content;
+  width: auto;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+}
+
+.app.light .message.bot {
+  background: var(--bot-bg-light);
+  color: var(--text-light);
+}
+
+/* User Message Styling */
+.user-message-container {
+  display: flex;
+  justify-content: flex-end;
+  position: relative;
+}
+
+.user-copy-button {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: transparent;
+  color: white;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: inherit;
+  font-family: inherit;
+  text-align: left;
+  max-height: 320px;
+  overflow-y: auto;
+  word-break: break-word;
+  white-space: pre-line;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  position: relative; /* Added: establish positioning context */
+  width: 100%;
+  min-height: 44px; /* Ensures enough space for the copy button in short messages */
+  position: relative;
+  padding-top: 8px; /* Add a little top padding so the button isn't flush against the edge */
+  padding-right: 40px; /* Already present: space for the copy button */
+}
+.user-copy-button::-webkit-scrollbar {
+  display: none;
+}
+
+.copy-icon {
+  position: absolute;
+  top: 8px; /* Aligns flush with the top edge of the bubble */
+  right: 16px; /* Aligns flush with the right edge of the bubble */
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+  font-size: 1.1em;
+  z-index: 2;
+  background: transparent;
+  pointer-events: auto;
+}
+
+.user-copy-button:hover .copy-icon {
+  opacity: 1;
+}
+
+/* Dual Response Layout */
+.dual-response {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  align-items: start;
+  width: 100%;
+  padding: 1rem; /* Symmetrical horizontal padding */
+  width: calc(100% - 1rem); /* Account for padding */
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+/* slide the left panel out past the left padding */
+.dual-response .model-response:first-child {
+  margin-left: -1.5rem;
+}
+
+/* slide the right panel out past the right padding */
+.dual-response .model-response:last-child {
+  margin-right: -1.5rem;
+}
+
+/* Model Response Styling */
+.model-response {
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  word-break: break-word;
+  overflow: hidden;
+  transition: transform 0.2s ease;
+  position: relative;
+}
+
+.model-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.model-header h4 {
+  margin: 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid;
+  font-size: 1.2em;
+  width: 100%;
+}
+
+.copy-button-container {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.model-copy-button {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.app.light .model-copy-button {
+  background: rgba(0, 0, 0, 0.1);
+  color: var(--text-light);
+}
+
+.model-copy-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.app.light .model-copy-button:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* Code Block Styling */
+.code-block-container {
+  position: relative;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+.app.light .code-block-container {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* Replace the previous ::before rule with this */
+.code-block-container code::before {
+  content: "\A"; /* Line break */
+  white-space: pre; /* Preserve formatting */
+  display: block; /* Make it a block element */
+  height: 0.7em; /* Reduce space height (default is ~1em) */
+  visibility: hidden; /* Hide while maintaining layout */
+}
+
+.code-copy-button {
+  position: absolute;
+  top: 16px; /* Adjusted from 16px for better spacing */
+  right: 16px; /* Adjusted from 16px for better spacing */
+  width: 28px; /* Reduced from 28px */
+  height: 28px; /* Reduced from 28px */
+  font-size: 0.875rem; /* Reduced from 1rem */
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: none;
+  border-radius: 0px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1rem;
+  z-index: 10;
+  transition: all 0.2s ease;
+}
+
+.app.light .code-copy-button {
+  background: rgba(0, 0, 0, 0.1);
+  color: var(--text-light);
+}
+
+.code-copy-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.app.light .code-copy-button:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* Dark Mode Contrast Improvements */
+.app.dark .model-copy-button,
+.app.dark .code-copy-button {
+  background-color: #374151; /* Darker gray (gray-800) */
+  color: white;
+}
+
+.app.dark .model-copy-button:hover,
+.app.dark .code-copy-button:hover {
+  background-color: #4b5563; /* gray-700 */
+}
+
+/* Ensure model responses align at the same height */
+.dual-response .model-response {
+  margin-top: 0;
+  height: 100%;
+}
+
+/* Input Field */
+.chatbot_input {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 95%;
+  max-width: 1200px;
+  padding: 0 25px;
+  z-index: 200;
+  background: transparent;
+  transition: left 0.3s;
+  display: flex;
+  justify-content: center;
+  textarea::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Add CSS variable for sidebar width */
+:root {
+  --sidebar-width: 250px;
+}
+
+.app.sidebar-open .main-content {
+  margin-left: var(--sidebar-width);
+}
+
+.app.sidebar-open .chatbot_input {
+  left: calc(50% + (var(--sidebar-width) / 2));
+}
+
+/* Medium screens */
+@media (max-width: 1200px) {
+  :root {
+    --sidebar-width: 200px;
+  }
+
+  .app.sidebar-open .chatbot_input {
+    width: calc(95% - var(--sidebar-width));
+  }
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  :root {
+    --sidebar-width: 180px;
+  }
+
+  .app.sidebar-open .chatbot_input {
+    left: calc(50% + (var(--sidebar-width) / 2) - 5%);
+    width: calc(100% - var(--sidebar-width));
+  }
+}
+
+.input-row {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.chatbot_input textarea {
+  width: 100%;
+  min-height: 56px;
+  max-height: 200px;
+  padding: 16px 140px 16px 24px; /* Increased from 110px to 140px */
+  border: none;
+  border-radius: 30px;
+  font-size: 1rem;
+  background: var(--input-bg-dark);
+  color: var(--text-dark);
+  transition: all 0.3s ease;
+  resize: none;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  line-height: 1.5;
+  overflow-y: auto; /* Changed from hidden to auto */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scrollbar-color: rgba(120, 120, 120, 0.3) transparent;
+}
+
+.app.light .chatbot_input textarea {
+  background: var(--input-bg-light);
+  color: var(--text-light);
+  border: 1px solid #ddd;
+}
+
+.chatbot_input textarea::-webkit-scrollbar {
+  width: 6px;
+  background: transparent;
+  display: none;
+}
+
+.chatbot_input textarea::-webkit-scrollbar-thumb {
+  background: rgba(150, 150, 150, 0.2);
+  border-radius: 4px;
+}
+
+.chatbot_input textarea::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chatbot_input textarea:focus,
+.chatbot_input textarea:not(:placeholder-shown) {
+  overflow-y: auto; /* Only show when typing or focused */
+}
+
+/* Replace the old button styles with these for the SVG button */
+.send-pill {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--button-bg-dark);
+  border: none;
+  padding: 0;
+  transition: background 0.2s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  z-index: 11; /* Added z-index to ensure it's above other elements */
+}
+
+.app.light .send-pill {
+  background: var(--button-bg-light);
+}
+
+.send-pill:active {
+  background: #2ecc71 !important;
+  transform: translateY(-50%) scale(0.98);
+}
+
+/* —— Send‑icon sizing —— */
+.send-pill .send-icon {
+  width: 24px; /* 2px padding all around inside a 36px button */
+  height: 24px;
+  display: block;
+  margin: auto; /* perfectly center it */
+  filter: invert(1); /* keep your dark‑mode filter */
+  transition: filter 0.2s;
+  box-sizing: content‑box;
+}
+
+.chatbot_input button {
+  position: absolute;
+  right: 28px;
+  bottom: 16px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  transition: all 0.2s ease;
+  color: var(--text-dark);
+  background: var(--button-bg-dark);
+  font-weight: 600;
+}
+.app.dark .chatbot_input button {
+  color: #ffffff;
+  background: #20b2aa;
+}
+
+.app.light .chatbot_input button {
+  color: #ffffff;
+  background: var(--button-bg-light);
+}
+
+.chatbot_input button:hover {
+  transform: translateY(-50%);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.app.dark .chatbot_input button:hover {
+  background: #1e9c8f;
+}
+
+.app.light .chatbot_input button:hover {
+  background: #8577e6;
+}
+
+.chatbot_input button:active {
+  background: #2ecc71 !important;
+  transform: translateY(-50%) scale(0.98);
+}
+
+/* Voice Button Styles */
+.voice-button {
+  position: absolute;
+  top: 50%;
+  left: 91%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--button-bg-dark);
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  z-index: 10; /* Ensure voice button is below send button */
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.app.light .voice-button {
+  background: var(--button-bg-light);
+}
+
+.voice-button.recording {
+  background: #ff4d4d;
+  animation: pulse 1.5s infinite;
+}
+
+.voice-button:hover {
+  transform: translateY(-50%) scale(1.05);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.voice-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: translateY(-50%); /* Keep it in place when disabled */
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 77, 77, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 77, 77, 0);
+  }
+}
+
+/* Mobile adjustments for voice button */
+@media (max-width: 768px) {
+  .send-pill {
+    right: 10px; /* Keep send button at far right */
+  }
+
+  .voice-button {
+    left: calc(79% + 50px);
+  }
+
+  .chatbot_input textarea {
+    padding: 16px 110px 16px 24px; /* Adjusted padding */
+  }
+}
+
+/* Animations */
+@keyframes messageAppear {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .header {
+    padding: 0 80px; /* Reduced padding for mobile */
+  }
+
+  .sidebar {
+    width: 200px;
+  }
+
+  .app.sidebar-open .chatbot_input {
+    left: calc(50% + 100px); /* Half of mobile sidebar width */
+  }
+
+  .sidebar.open + .main-content {
+    margin-left: 200px; /* Adjusted for mobile */
+  }
+
+  .sidebar-toggle {
+    top: 5px;
+    left: 10px;
+  }
+
+  .new-chat-button {
+    width: 40px; /* Even smaller size for mobile */
+    height: 40px;
+    font-size: 1rem; /* Smaller symbol size */
+    margin-top: 60px; /* Adjusted for mobile */
+  }
+
+  .main-content {
+    padding: 1rem;
+    margin-left: 0; /* No shifting to the right */
+  }
+
+  .chatbot_container {
+    height: calc(100vh - 140px); /* Adjusted height for mobile */
+    padding: 15px;
+  }
+
+  .theme-toggle {
+    right: 40px; /* Smaller offset for mobile */
+    top: 120%; /* Adjusted vertical alignment for mobile */
+    transform: translateY(-50%);
+  }
+  .chatbot_input {
+    bottom: 10px;
+    padding: 0 15px;
+  }
+
+  .chatbot_input button {
+    right: 20px;
+    bottom: 12px;
+    padding: 6px 12px;
+  }
+}
+
+/* ——— Markdown styling for chat bubbles ——— */
+
+.message-content h1,
+.message-content h2,
+.message-content h3 {
+  font-weight: bold;
+  margin: 1em 0 0.5em;
+}
+
+.message-content p {
+  margin: 0.5em 0;
+}
+
+.message-content em {
+  font-style: italic;
+}
+
+.message-content strong {
+  font-weight: bold;
+}
+
+.message-content ul,
+.message-content ol {
+  padding-left: 1.25rem;
+  margin: 0.5em 0;
+}
+
+.message-content pre {
+  background: rgba(0, 0, 0, 0.05);
+  padding: 1rem;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+.message-content code {
+  font-family: "Source Code Pro", monospace;
+}
+
+/* Typing Animation */
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+}
+
+.typing-text {
+  font-size: 1rem;
+  color: inherit;
+  font-style: italic;
+}
+
+.dot-animation::after {
+  content: "";
+  display: inline-block;
+  width: 1em;
+  text-align: left;
+  animation: dots 1s steps(3, end) infinite;
+}
+
+@keyframes dots {
+  0%,
+  20% {
+    content: "";
+  }
+  40% {
+    content: ".";
+  }
+  60% {
+    content: "..";
+  }
+  80%,
+  100% {
+    content: "...";
+  }
+}
+
+/* Dual Response Styles */
+.dual-loading {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  padding: 1rem;
+}
+
+.model-loading {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+}
+
+.model-response {
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  word-break: break-word;
+  overflow: hidden;
+  transition: transform 0.2s ease;
+}
+
+.model-response:hover {
+  transform: translateY(-2px);
+}
+
+/* ============== CONTENT ALIGNMENT ============== */
+.model-response > *:first-child {
+  margin-top: 0;
+}
+
+.model-response > *:last-child {
+  margin-bottom: 0;
+}
+
+/* Code block adjustments */
+.model-response pre {
+  max-width: 100%;
+  overflow-x: auto;
+  background: rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+.model-response h4 {
+  margin: 0 0 1rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid;
+  font-size: 1.2em;
+}
+
+.model-response h4:nth-child(2) {
+  color: #20b2aa; /* Llama color */
+}
+
+.app.light .model-response {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.app.light .model-response h4 {
+  color: #6c5ce7; /* Gemini light color */
+}
+
+.app.light .model-response h4:nth-child(2) {
+  color: #1e9c8f; /* Llama light color */
+}
+
+.app.light .model-response pre {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .dual-response {
+    grid-template-columns: 1fr !important; /* Force single column on mobile */
+  }
+
+  .model-response {
+    padding: 1rem;
+    margin-bottom: 0;
+  }
+
+  .message.bot {
+    max-width: 90%;
+    border-radius: 15px;
+  }
+}
+
+/* Typing Effect Styles */
+.model-response.typing-active {
+  background: rgba(255, 255, 255, 0.1);
+  border-left: 3px solid #20b2aa;
+  transition: all 0.3s ease;
+}
+
+.app.light .model-response.typing-active {
+  background: rgba(0, 0, 0, 0.05);
+  border-left: 3px solid #6c5ce7;
+}
+
+@keyframes typing {
+  from {
+    opacity: 0.5;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.model-response.typing-active > * {
+  animation: typing 0.5s ease-in-out;
+}
+
+.model-response h4 {
+  margin: 0 0 1rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid;
+  font-size: 1.2em;
+}
+
+.model-response h4:nth-child(2) {
+  color: #20b2aa; /* Llama color */
+}
+
+.app.light .model-response {
+  background: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.app.light .model-response h4 {
+  color: #6c5ce7; /* Gemini light color */
+}
+
+.app.light .model-response h4:nth-child(2) {
+  color: #1e9c8f; /* Llama light color */
+}
+
+.app.light .model-response pre {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .dual-response {
+    grid-template-columns: 1fr !important; /* Force single column on mobile */
+  }
+
+  .model-response {
+    padding: 1rem;
+    margin-bottom: 0;
+  }
+
+  .message.bot {
+    max-width: 90%;
+    border-radius: 15px;
+  }
+}
+
+.thinking-process {
+  background: rgba(0, 0, 0, 0.05);
+  border-left: 3px solid #6366f1;
+  padding: 12px;
+  margin: 12px 0;
+  border-radius: 4px;
+}
+
+.thinking-process summary {
+  font-weight: bold;
+  cursor: pointer;
+  margin-bottom: 8px;
+  color: #6366f1;
+}
+
+.thinking-process[open] summary {
+  margin-bottom: 12px;
+}

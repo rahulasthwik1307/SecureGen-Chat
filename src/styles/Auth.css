@@ -1,0 +1,298 @@
+/* ===== Container & Background ===== */
+.auth-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  padding: 2rem;
+}
+
+/* ===== Card (Enlarged) ===== */
+.auth-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 3rem 2.5rem; /* more breathing room */
+  width: 100%;
+  max-width: 700px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transform: translateY(-25px);
+}
+.auth-card:hover {
+  transform: translateY(-30px);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.16);
+}
+
+/* ===== Titles ===== */
+.auth-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #333;
+  text-align: center;
+  margin-bottom: 0.75rem;
+  line-height: 1.2;
+}
+.auth-subtitle {
+  font-size: 1.1rem;
+  color: #555;
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+/* ===== Welcome Buttons (Gap & Centering) ===== */
+.auth-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 2rem; /* clear space between Login & Register */
+}
+
+/* ===== Form ===== */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; /* space out each form row */
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+.form-group input {
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  width: 100%; /* full width input */
+}
+.form-group input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+}
+.error {
+  color: #e74c3c;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+/* ===== Buttons ===== */
+.auth-button {
+  /* center the text vertically & horizontally */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  flex: none;
+  min-width: 140px;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+.auth-button.primary {
+  background: #667eea;
+  color: #fff;
+}
+.auth-button.primary:hover {
+  background: #5a6fd8;
+  transform: translateY(-2px);
+}
+.auth-button.secondary {
+  background: #e0e0e0;
+  color: #333;
+}
+.auth-button.secondary:hover {
+  background: #cacaca;
+  transform: translateY(-2px);
+}
+.auth-button.back {
+  margin-top: 0.5rem;
+  position: relative;
+  top: -20px;
+}
+
+/* ===== Links ===== */
+.auth-link {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.95rem;
+}
+.auth-link .link {
+  color: #667eea;
+  text-decoration: none;
+}
+.auth-link .link:hover {
+  text-decoration: underline;
+}
+
+/* ===== Face Capture Step ===== */
+.face-auth-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.face-auth-step h2 {
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+  font-size: 1.35rem;
+  color: #333;
+}
+.face-auth-step p {
+  margin-bottom: 1rem;
+  color: #555;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 2rem 1.5rem;
+    max-width: 90%;
+  }
+  .auth-buttons {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .auth-button {
+    width: 100%;
+    min-width: unset;
+  }
+}
+
+/* ===== (Keep all existing auth styles above this line) ===== */
+
+/* ===== NEW WELCOME PAGE STYLES ===== */
+.welcome-page {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.gradient-bg {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #dbeafe 100%);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Main container adjustments */
+.container.mx-auto {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding-top: 2rem;
+  padding-bottom: 4rem; /* Increased bottom padding */
+}
+
+/* Navbar spacing */
+nav.flex {
+  margin-bottom: 3rem; /* Reduced from mb-16 (4rem) to 3rem */
+}
+
+/* Main content area */
+main.flex {
+  flex: 1;
+  margin-top: 2rem; /* Added top margin */
+  padding-bottom: 2rem; /* Added bottom padding */
+}
+
+/* Left content section */
+.md\\:w-1\\/2 {
+  padding-top: 2rem;
+  margin-left: 2rem;
+}
+
+/* Chat card container */
+.md\\:w-1\\/2.relative {
+  margin-top: auto; /* Pushes chat to bottom */
+  padding-top: 3rem; /* Added space above chat */
+}
+
+/* Chat bubble container */
+.relative.bg-white {
+  margin-top: 2rem; /* Added space above chat bubbles */
+}
+
+.gradient-text {
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.chat-bubble {
+  position: relative;
+  border-radius: 1.5rem;
+  padding: 1rem;
+  margin: 0.5rem;
+  max-width: 80%;
+}
+
+.chat-bubble::after {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  width: 20px;
+  height: 20px;
+  background: inherit;
+  transform: rotate(45deg);
+}
+
+.btn-hover {
+  transition: all 0.3s ease;
+}
+
+.btn-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Ensure Font Awesome icons display properly */
+.fas {
+  display: inline-block;
+}
+
+/* ===== Scrollbar and Overflow Control ===== */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  main.flex {
+    flex-direction: column;
+    gap: 3rem; /* Increased gap between sections */
+  }
+
+  .md\\:w-1\\/2 {
+    width: 100%;
+    padding: 0 1rem;
+  }
+
+  .chat-bubble {
+    max-width: 90%;
+  }
+
+  /* Additional spacing for mobile */
+  .relative.bg-white {
+    margin-top: 1.5rem;
+  }
+}
