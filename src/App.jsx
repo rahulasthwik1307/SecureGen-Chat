@@ -1,12 +1,15 @@
 import { useEffect, useState, useCallback } from "react";
 import "./App.css";
 import ChatMessage from "./components/ChatMessage";
+import ChatHistory from "./components/ChatHistory";
 import VoiceButton from "./components/VoiceButton";
 import { generateLlamaResponse, generateDeepseekResponse } from "./utils/api";
 import sendIcon from "./assets/send-icon.svg";
 import { useAuth } from "./contexts/AuthContext";
 import useUserChat from "./hooks/useUserChat";
 import Logout from "./components/Logout";
+import { saveChatSession, getChatSessionById, updateChatSession } from "./db/db";
+import "./components/ChatHistory.css";
 
 function App() {
   const [prompt, setPrompt] = useState("");
@@ -29,6 +32,12 @@ function App() {
     },
   ]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [currentChatId, setCurrentChatId] = useState(null);
+  const [dualAiText, setDualAiText] = useState({
+    llama: "",
+    deepseek: "",
+    show: false
+  });
 
   // Safety Measures (from first project)
   useEffect(() => {
@@ -58,10 +67,10 @@ function App() {
 
   // Load chat history when user changes
   useEffect(() => {
-    if (chatHistory.length > 0 && !chatLoading) {
+    if (chatHistory.length > 0 && !chatLoading && !currentChatId) {
       setCurrentChat(chatHistory);
     }
-  }, [chatHistory, chatLoading]);
+  }, [chatHistory, chatLoading, currentChatId]);
 
   const handleSubmit = useCallback(async () => {
     if (!prompt.trim()) return;
@@ -72,10 +81,11 @@ function App() {
 
     const userMessageId = Date.now();
     const botMessageId = userMessageId + 1;
+    const currentPrompt = prompt.trim(); // Store the current prompt value
 
     const updatedChat = [
       ...currentChat,
-      { id: userMessageId, content: prompt, isUser: true },
+      { id: userMessageId, content: currentPrompt, isUser: true },
       {
         id: botMessageId,
         content: { llama: "", deepseek: "", showSingle: false },
@@ -89,10 +99,22 @@ function App() {
     setLoadingId(botMessageId);
 
     try {
-      const [llamaResponse, deepseekResponse] = await Promise.all([
-        generateLlamaResponse(prompt),
-        generateDeepseekResponse(prompt)
-      ]);
+      // Make individual API calls with proper error handling for each
+      let llamaResponse, deepseekResponse;
+      
+      try {
+        llamaResponse = await generateLlamaResponse(currentPrompt);
+      } catch (llamaError) {
+        console.error("LLaMA API error:", llamaError);
+        llamaResponse = "⚠️ Failed to fetch response";
+      }
+      
+      try {
+        deepseekResponse = await generateDeepseekResponse(currentPrompt);
+      } catch (deepseekError) {
+        console.error("DeepSeek API error:", deepseekError);
+        deepseekResponse = "⚠️ Failed to fetch response";
+      }
 
       const finalChat = updatedChat.map(item =>
         item.id === botMessageId ? {
@@ -107,9 +129,25 @@ function App() {
       );
 
       setCurrentChat(finalChat);
-      setChatHistory(finalChat);
+      
+      if (user?.username) {
+        try {
+          if (currentChatId) {
+            // Update existing chat session
+            await updateChatSession(currentChatId, finalChat);
+          } else {
+            // Create new chat session
+            const { id } = await saveChatSession(user.username, finalChat);
+            setCurrentChatId(id);
+          }
+        } catch (dbError) {
+          console.error("Error saving chat session:", dbError);
+          // Continue execution even if saving fails
+        }
+      }
 
     } catch (error) {
+      console.error("General error in handleSubmit:", error);
       const finalChat = updatedChat.map(item =>
         item.id === botMessageId ? {
           ...item,
@@ -122,10 +160,11 @@ function App() {
         } : item
       );
       setCurrentChat(finalChat);
+    } finally {
+      // Always reset loading state, regardless of success or failure
+      setLoadingId(null);
     }
-
-    setLoadingId(null);
-  }, [currentChat, prompt, setChatHistory]);
+  }, [currentChat, prompt, user?.username, currentChatId]);
 
   const startNewChat = () => {
     const newChat = [{
@@ -138,13 +177,32 @@ function App() {
       isUser: false
     }];
     setCurrentChat(newChat);
-    setChatHistory(newChat);
+    setCurrentChatId(null);
     setIsSidebarOpen(false);
   };
 
   const handleClearChat = async () => {
     await clearChat();
     startNewChat();
+  };
+
+  const handleSelectChat = async (chatId) => {
+    if (chatId === currentChatId) return; // Don't reload if already selected
+    
+    try {
+      const session = await getChatSessionById(chatId);
+      if (session) {
+        // Mark these messages as history when loading from a saved session
+        const messagesWithHistoryFlag = session.messages.map(msg => ({
+          ...msg,
+          isHistory: true
+        }));
+        setCurrentChat(messagesWithHistoryFlag);
+        setCurrentChatId(chatId);
+      }
+    } catch (error) {
+      console.error("Error loading chat session:", error);
+    }
   };
 
   useEffect(() => {
@@ -195,6 +253,16 @@ function App() {
             </button>
           )}
         </div>
+        
+        {/* Chat History Component */}
+        {isSidebarOpen && user && (
+          <ChatHistory 
+            username={user.username} 
+            onSelectChat={handleSelectChat}
+            currentChatId={currentChatId}
+          />
+        )}
+        
         {isSidebarOpen && <Logout />}
       </div>
 
@@ -219,6 +287,7 @@ function App() {
                 isUser={message.isUser}
                 isLoading={message.id === loadingId}
                 isDarkMode={isDarkMode}
+                isHistory={message.isHistory || false} // Pass the isHistory flag
               />
             ))}
           </div>
@@ -257,6 +326,20 @@ function App() {
             </button>
           </div>
         </div>
+
+        {/* Dual AI Text Section */}
+        {dualAiText.show && (
+          <div className="dual-ai-container">
+            <div className="dual-ai-text">
+              <h3>LLaMA</h3>
+              <p>{dualAiText.llama || "No response yet"}</p>
+            </div>
+            <div className="dual-ai-text">
+              <h3>DeepSeek</h3>
+              <p>{dualAiText.deepseek || "No response yet"}</p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

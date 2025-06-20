@@ -4,6 +4,7 @@ import "../styles/Auth.css";
 // Inside Welcome.jsx
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
+
 const Welcome = () => {
   useEffect(() => {
     // Typing animation
@@ -59,11 +60,11 @@ const Welcome = () => {
           {/* Main Section */}
           <main className="flex flex-col md:flex-row items-center justify-between gap-12 overflow-hidden">
             {/* Left Content */}
-            <div className="md:w-1/2 ml-8"> {/* Added ml-8 here */}
-              <h1 className="text-4xl md:text-6xl font-bold text-gray-800 mb-6 leading-tight">
+            <div className="md:w-1/2 ml-8"> 
+              <h1 className="text-4xl md:text-6xl font-bold text-gray-800 mb-6 leading-tight ml-12">
                 Welcome to <span className="gradient-text">Dual AI Chatbot!</span>
               </h1>
-              <p className="text-lg text-gray-600 mb-10 max-w-lg">
+              <p className="text-lg text-gray-600 mb-10 max-w-lg ml-12">
                 Experience the future of conversation with our intelligent dual AI system. 
                 Get instant, accurate responses powered by cutting-edge artificial intelligence 
                 that understands context and delivers human-like interactions.

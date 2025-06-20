@@ -450,24 +450,27 @@
 
 .code-copy-button {
   position: absolute;
-  top: 16px; /* Adjusted from 16px for better spacing */
-  right: 16px; /* Adjusted from 16px for better spacing */
-  width: 28px; /* Reduced from 28px */
-  height: 28px; /* Reduced from 28px */
-  font-size: 0.875rem; /* Reduced from 1rem */
+  top: 16px;
+  right: 16px;
+  width: 28px;
+  height: 28px;
   background: rgba(255, 255, 255, 0.2);
   color: white;
   border: none;
-  border-radius: 0px;
-  width: 28px;
-  height: 28px;
+  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   font-size: 1rem;
   z-index: 10;
-  transition: all 0.2s ease;
+  /* Use transform for smooth transitions instead of changing dimensions */
+  transform: none;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  /* Prevent layout shifts */
+  will-change: transform;
+  /* Ensure the button doesn't cause reflows */
+  backface-visibility: hidden;
 }
 
 .app.light .code-copy-button {
@@ -477,10 +480,17 @@
 
 .code-copy-button:hover {
   background: rgba(255, 255, 255, 0.3);
+  /* Use transform instead of changing dimensions */
+  transform: scale(1.05);
 }
 
 .app.light .code-copy-button:hover {
   background: rgba(0, 0, 0, 0.2);
+  transform: scale(1.05);
+}
+
+.code-copy-button:active {
+  transform: scale(0.95);
 }
 
 /* Dark Mode Contrast Improvements */
@@ -1087,4 +1097,33 @@
 
 .thinking-process[open] summary {
   margin-bottom: 12px;
+}
+
+/* Dual AI text section */
+.dual-ai-container {
+  display: flex;
+  gap: 20px;
+  margin: 20px 0;
+  padding: 20px;
+  border-radius: 8px;
+  background-color: var(--bg-color-secondary);
+}
+
+.dual-ai-text {
+  flex: 1;
+  padding: 15px;
+  border-radius: 8px;
+  background-color: var(--bg-color);
+}
+
+.dual-ai-text h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: var(--text-color);
+}
+
+.dual-ai-text p {
+  margin: 0;
+  color: var(--text-color-secondary);
+  white-space: pre-wrap;
 }
