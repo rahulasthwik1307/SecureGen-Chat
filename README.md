@@ -1,8 +1,7 @@
 
 # SecureGen Chat 💬🔐
-
 ### Intelligent Multi-Model Conversational Platform with Biometric Face Verification
-
+![Image](https://github.com/user-attachments/assets/25e27bcf-1295-44bf-b695-2e403478bf1c)
 **Description**:
 SecureGen Chat is a dual-AI chatbot platform that combines secure facial authentication and intelligent conversations using LLaMA and DeepSeek models. Users can interact through voice or text, with persistent chat history and a clean UI.
 
