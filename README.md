@@ -70,5 +70,31 @@ src/
 
 ---
 
+## 📸 Screenshots
+
+### 🏠 Homepage
+![Image](https://github.com/user-attachments/assets/c7024cc0-d287-467e-9c66-63d5801a0922)
+
+### 📝 Account Registration
+![Image](https://github.com/user-attachments/assets/3fd110ad-42a8-4ad2-a9c0-150bb4bac7b5)
+
+### 📷 Biometric Enrollment
+![Image](https://github.com/user-attachments/assets/a132114f-dbb2-4a2d-8eb8-689eacd6715b)
+
+### 🔐 Login Screen
+![Image](https://github.com/user-attachments/assets/4aab4933-a1a3-426a-839f-d9e4747b76e4)
+
+### 🧑‍💻 Face Authentication
+![Image](https://github.com/user-attachments/assets/ac981143-f5b1-4b0d-92ef-0c081798fce8)
+
+### 💬 Chat Window
+![Image](https://github.com/user-attachments/assets/4ce49489-047b-4c47-83e3-0652a275e74f)
+
+### 🧠 Dual-Model Output
+![Image](https://github.com/user-attachments/assets/3e898f11-e751-4246-8f1a-853584e54cdf)
+
+### 🗂️ Sidebar with Chat History
+![image](https://github.com/user-attachments/assets/c467a50d-06c1-44f0-a495-6e78d3e53ba2)
+
 
 
