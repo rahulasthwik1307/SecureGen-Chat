@@ -1,93 +1,109 @@
-// Updated api.js with anti-truncation measures
+// src/utils/api.js
 import Groq from "groq-sdk";
 
 const groq = new Groq({
   apiKey: import.meta.env.VITE_API_GROQ_KEY,
-  dangerouslyAllowBrowser: true
+  dangerouslyAllowBrowser: true,
 });
 
-// Helper to validate response completeness
-const isCompleteResponse = (text) => {
-  if (!text) return false;
-  // Check for proper sentence termination
-  const hasProperEnding = /[.!?]\s*$/.test(text);
-  // Check for balanced tags in thinking process
-  const thinkTagsBalanced = (text.match(/<think>/g) || []).length === 
-                          (text.match(/<\/think>/g) || []).length;
-  return hasProperEnding && thinkTagsBalanced;
-};
+// ========= Helpers =========
+const isNonEmpty = (s) => typeof s === "string" && s.trim().length > 0;
 
-const MAX_RETRIES = 2;
-const BASE_DELAY = 1000;
+const MAX_RETRIES = 1;
+const BASE_DELAY_MS = 800;
 
-const fetchWithRetry = async (fetchFn, retries = MAX_RETRIES) => {
+const retry = async (fn, retries = MAX_RETRIES) => {
   try {
-    const result = await fetchFn();
-    if (!isCompleteResponse(result)) {
-      throw new Error('Incomplete response detected');
-    }
-    return result;
-  } catch (error) {
+    return await fn();
+  } catch (err) {
     if (retries > 0) {
-      await new Promise(resolve => setTimeout(resolve, BASE_DELAY));
-      return fetchWithRetry(fetchFn, retries - 1);
+      await new Promise((r) => setTimeout(r, BASE_DELAY_MS));
+      return retry(fn, retries - 1);
     }
-    throw error;
+    throw err;
   }
 };
 
+// ========= ANSWER-ONLY MODEL (Lightweight) =========
+// Uses moonshotai/kimi-k2-instruct-0905
+// Greeting handling changed: give a friendly sentence instead of one-word echo.
 export const generateLlamaResponse = async (prompt) => {
-  return fetchWithRetry(async () => {
+  const trimmed = (prompt || "").trim().toLowerCase();
+  if (["hi", "hello", "hey"].includes(trimmed)) {
+    return "Hello! How can I help you today?";
+  }
+
+  return retry(async () => {
     try {
       const completion = await groq.chat.completions.create({
-        model: "meta-llama/llama-4-maverick-17b-128e-instruct",
-        messages: [{ role: "user", content: prompt }],
-        max_tokens: 2048 // Explicit token limit
+        model: "moonshotai/kimi-k2-instruct-0905",
+        stream: false, // simpler client handling
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are a concise assistant. Provide the final answer only. Do not reveal chain-of-thought.",
+          },
+          { role: "user", content: prompt },
+        ],
+        max_tokens: 2048,
+        temperature: 0.6,
+        top_p: 1.0,
       });
-      return completion.choices[0]?.message?.content || "⚠️ No response generated";
+
+      const text = completion.choices?.[0]?.message?.content ?? "";
+      if (!isNonEmpty(text)) throw new Error("Empty response");
+      const fr = completion.choices?.[0]?.finish_reason;
+      if (fr === "length") {
+        return text + "\n\n⚠️ Truncated (hit max_tokens). Consider raising max_tokens.";
+      }
+      return text;
     } catch (error) {
-      console.error("Groq API error:", error);
-      return `⚠️ Llama-4 Error: ${error.message}`;
+      console.error("Groq (Kimi) error:", error);
+      return `⚠️ Llama Error: ${error.message}`;
     }
   });
 };
 
+// ========= REASONING MODEL (Keep name, use Qwen3-32B) =========
+// Keep the exported name so other files don't change.
 export const generateDeepseekResponse = async (prompt) => {
-  return fetchWithRetry(async () => {
+  return retry(async () => {
     try {
       const completion = await groq.chat.completions.create({
-        model: "deepseek-r1-distill-llama-70b",
-        messages: [{
-          role: "user",
-          content: `Please reason step by step. Wrap the reasoning inside <think>...</think> tags. Then give the final answer.\n\nQuestion:\n${prompt}`
-        }],
+        model: "qwen/qwen3-32b", // reasoning model on Groq (preview)
+        stream: false,
+        messages: [
+          {
+            role: "system",
+            content: [
+              "You are a reasoning assistant.",
+              "Do your detailed reasoning in a private scratchpad and DO NOT reveal it.",
+              "Return output in EXACTLY this format:",
+              "",
+              "Answer: <one short clear answer>",
+              "Reasoning: <up to 3 short bullet points, each <= 20 words>",
+            ].join("\n"),
+          },
+          { role: "user", content: prompt },
+        ],
         temperature: 0.6,
-        max_tokens: 2048, // Increased from 1024
         top_p: 0.95,
-        stream: true,
-        reasoning_format: "raw"
+        max_tokens: 2048,
+        // If your Groq account supports it, you could try:
+        // reasoning_format: "hidden",
       });
 
-      let fullResponse = "";
-      let isComplete = false;
-
-      for await (const chunk of completion) {
-        const content = chunk.choices[0]?.delta?.content || "";
-        fullResponse += content;
-        // Check if this is the final chunk
-        if (chunk.choices[0]?.finish_reason === "stop") {
-          isComplete = true;
-        }
+      const text = completion.choices?.[0]?.message?.content ?? "";
+      if (!isNonEmpty(text)) throw new Error("Empty response");
+      const fr = completion.choices?.[0]?.finish_reason;
+      if (fr === "length") {
+        return text + "\n\n⚠️ Truncated (hit max_tokens). Consider increasing it.";
       }
-
-      if (!isComplete || !isCompleteResponse(fullResponse)) {
-        throw new Error('Stream ended prematurely');
-      }
-
-      return fullResponse || "⚠️ No response generated";
+      return text;
     } catch (error) {
-      console.error("Deepseek API error:", error);
-      return `⚠️ Deepseek Error: ${error.message}`;
+      console.error("Groq (Qwen reasoning) error:", error);
+      return `⚠️ Deepseek (Qwen) Error: ${error.message}`;
     }
   });
 };
