@@ -171,15 +171,17 @@
 /* ===== (Keep all existing auth styles above this line) ===== */
 
 /* ===== NEW WELCOME PAGE STYLES ===== */
+
+/* Allow page to scroll normally by default (we override for desktop below) */
 .welcome-page {
-  position: fixed;
+  position: relative;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
+  width: 100%;
+  /* height removed to allow normal scrolling when needed */
 }
 
+/* gradient background and base layout */
 .gradient-bg {
   background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #dbeafe 100%);
   display: flex;
@@ -199,6 +201,11 @@
 /* Navbar spacing */
 nav.flex {
   margin-bottom: 3rem; /* Reduced from mb-16 (4rem) to 3rem */
+}
+
+/* ensure nav relative context stays the same */
+.center-title-wrapper {
+  /* keep center title exactly where it is for desktop and small screens */
 }
 
 /* Main content area */
@@ -265,34 +272,152 @@ main.flex {
   display: inline-block;
 }
 
-/* ===== Scrollbar and Overflow Control ===== */
+/* ===== Default Scrollbar and Overflow Control ===== */
+/* Default allow normal scrolling; we override for desktop to hide scrollbars */
 html,
 body {
   margin: 0;
   padding: 0;
   width: 100%;
   height: 100%;
-  overflow: hidden;
+  overflow: auto; /* default: allow scrolling */
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
+/* ================================================================== */
+/* Responsive adjustments for HALF-SCREEN behavior (<=1024px & <=768px) */
+/* ================================================================== */
+
+/* For both tablet (<=1024px) and mobile (<=768px) we want:
+   - Buttons moved below the centered heading and centered horizontally
+   - Buttons keep desktop font-size (no shrinking)
+   - Reduce gap between paragraph and chat card (only at these sizes)
+   - Keep Dual AI heading exactly centered and unchanged for desktop but nudged up a bit here
+*/
+
+@media (max-width: 1024px) {
+  /* Make the main section stack vertically (if not already) and reduce spacing */
   main.flex {
     flex-direction: column;
-    gap: 3rem; /* Increased gap between sections */
+    gap: 4rem; /* tightened gap for half-screen */
   }
 
-  .md\\:w-1\\/2 {
+  /* Left column: make widths full and remove the large ml for desktop */
+  .md\\:w-1\\/2.left-content {
+    width: 100%;
+    padding: 0 1rem;
+    margin-left: 0; /* remove desktop ml-8 effect on half-screen */
+  }
+
+  /* Chat column */
+  .chat-wrap {
+    width: 100%;
+    padding: 0 1rem;
+    margin-top: 0.5rem;
+  }
+
+  /* Reduce vertical gap between paragraph and chat card only at this size */
+  .intro-paragraph {
+    margin-bottom: 1.5rem; /* tightened from 2.5rem on desktop */
+  }
+  .chat-card {
+    margin-top: 0.5rem;
+  }
+
+  /* Reposition the nav buttons: make them full-width below the centered title */
+  .nav-buttons {
+    position: relative !important;
+    margin-left: 0 !important;
+    margin-top: 4.5rem; /* push buttons visually below the centered title */
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    width: 100%;
+    z-index: 10;
+  }
+
+  /* Keep button font-size same as desktop (override tailwind smaller text-sm) */
+  .nav-buttons .btn-hover {
+    font-size: 1rem !important; /* same as md:text-base */
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  /* Slightly nudge the centered title upward on half-screen (subtle) */
+  .center-title-wrapper {
+    left: 50%;
+    transform: translateX(-50%) translateY(-8px);
+    top: -2px;
+  }
+}
+
+@media (max-width: 768px) {
+  /* further tighten spacing on small screens but keep heading center unchanged */
+  main.flex {
+    flex-direction: column;
+    gap: 3rem;
+  }
+
+  .md\\:w-1\\/2.left-content {
     width: 100%;
     padding: 0 1rem;
   }
 
-  .chat-bubble {
-    max-width: 90%;
+  .chat-wrap {
+    width: 100%;
+    padding: 0 1rem;
+    margin-top: 0.5rem;
   }
 
-  /* Additional spacing for mobile */
-  .relative.bg-white {
-    margin-top: 1.5rem;
+  .intro-paragraph {
+    margin-bottom: 1rem; /* even tighter on small screens */
+  }
+
+  .chat-card {
+    margin-top: 0.5rem;
+  }
+
+  /* Buttons stay below heading and remain desktop font-size */
+  .nav-buttons {
+    position: relative !important;
+    margin-top: 4rem;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    width: 100%;
+    z-index: 10;
+  }
+
+  .nav-buttons .btn-hover {
+    font-size: 1rem !important; /* preserve desktop font size */
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  /* Slightly nudge the centered title upward on small screens (a bit more) */
+  .center-title-wrapper {
+    left: 50%;
+    transform: translateX(-50%) translateY(-12px);
+    top: -4px;
   }
 }
+
+/* ================================================================== */
+/* Desktop / Full-screen specific: hide both vertical and horizontal scrollbars
+   This applies only when viewport width is larger than 1024px (i.e., full-screen)
+   so half-screen (<=1024px) will retain scroll behavior/visible vertical scrollbar.
+*/
+/* Hide scrollbars only at full desktop sizes (min-width:1025px) */
+@media (min-width: 1025px) {
+  html,
+  body {
+    overflow: hidden; /* remove vertical & horizontal scrollbars on desktop as requested */
+  }
+
+  /* Ensure welcome page occupies full viewport without scroll */
+  .welcome-page {
+    height: 100vh;
+    overflow: hidden;
+  }
+}
+
+/* No changes to desktop-specific sizes, animations, colors, margins beyond these breakpoints */
