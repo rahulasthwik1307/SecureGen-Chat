@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import bcrypt from "bcryptjs";
 import FaceCapture from "./FaceCapture";
 import { db } from "../db/db";
+import { loadModels } from "../utils/face";
 import * as faceapi from "face-api.js";
+import { FaArrowLeft } from "react-icons/fa6";
 import "../styles/Auth.css";
 
 const Register = () => {
@@ -17,6 +19,11 @@ const Register = () => {
   const [showFaceCapture, setShowFaceCapture] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+
+  // Pre-load face models silently in background
+  useEffect(() => {
+    loadModels();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -31,7 +38,7 @@ const Register = () => {
     if (!formData.username) {
       newErrors.username = "Username is required";
     } else if (formData.username.length < 3) {
-      newErrors.username = "Username must be at least 3 characters";
+      newErrors.username = "Must be at least 3 characters";
     }
     if (!formData.password) {
       newErrors.password = "Password is required";
@@ -52,7 +59,7 @@ const Register = () => {
     try {
       const exists = await db.users.get(formData.username);
       if (exists) {
-        toast.error("Username already exists. Please sign in.");
+        toast.error("Username already registered. Please sign in.");
         navigate("/login");
         return;
       }
@@ -68,25 +75,28 @@ const Register = () => {
   const handleFaceCapture = async (descriptor) => {
     setLoading(true);
     try {
-      // duplicate face check...
+      // Check for duplicate face across registered users
       const all = await db.users.toArray();
       const dup = all.some((user) => {
         if (!user.faceDescriptor) return false;
         const stored = new Float32Array(user.faceDescriptor);
         return faceapi.euclideanDistance(stored, descriptor) < 0.5;
       });
+
       if (dup) {
-        toast.error("Face already registered with another user.");
+        toast.error("This face is already registered with another account.");
         setShowFaceCapture(false);
         return;
       }
+
       const hash = await bcrypt.hash(formData.password, 10);
       await db.users.add({
         username: formData.username,
         passwordHash: hash,
         faceDescriptor: Array.from(descriptor),
       });
-      toast.success("Registration successful! Redirecting to login...");
+
+      toast.success("Account & Face Registration successful! Please sign in.");
       navigate("/login");
     } catch (err) {
       console.error(err);
@@ -99,27 +109,15 @@ const Register = () => {
   return (
     <div className="auth-container">
       <div className="auth-card" role="main">
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
-          <div style={{
-            width: '56px',
-            height: '56px',
-            backgroundColor: '#FF5470',
-            border: '3px solid #111111',
-            borderRadius: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '26px',
-            boxShadow: '3px 3px 0px #111111',
-            transform: 'rotate(4deg)'
-          }}>
+        {/* Compact Logo Mark */}
+        <div className="auth-badge-row">
+          <div className="auth-logo-badge pink">
             🚀
           </div>
         </div>
-        <h1 className="auth-title">Create Free Account</h1>
-        <p className="auth-subtitle">
-          Secure your account with face authentication
-        </p>
+
+        <h1 className="auth-title">Create Account</h1>
+        <p className="auth-subtitle">Dual AI Arena Face-Protected Profile</p>
 
         {!showFaceCapture ? (
           <form className="auth-form" onSubmit={handleSubmit} noValidate>
@@ -131,7 +129,7 @@ const Register = () => {
                 type="text"
                 value={formData.username}
                 onChange={handleChange}
-                placeholder="Choose a username"
+                placeholder="Choose your handle"
                 required
               />
               {errors.username && <span className="error">{errors.username}</span>}
@@ -145,12 +143,10 @@ const Register = () => {
                 type="password"
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="Enter a password"
+                placeholder="Create password"
                 required
               />
-              {errors.password && (
-                <span className="error">{errors.password}</span>
-              )}
+              {errors.password && <span className="error">{errors.password}</span>}
             </div>
 
             <div className="form-group">
@@ -161,7 +157,7 @@ const Register = () => {
                 type="password"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                placeholder="Re-enter your password"
+                placeholder="Confirm password"
                 required
               />
               {errors.confirmPassword && (
@@ -174,7 +170,7 @@ const Register = () => {
               className="auth-button primary"
               disabled={loading}
             >
-              {loading ? "Processing…" : "Continue"}
+              {loading ? "Processing..." : "Continue to Face Scan →"}
             </button>
 
             <p className="auth-link">
@@ -184,23 +180,24 @@ const Register = () => {
               </Link>
             </p>
             <Link to="/" className="auth-home-link">
-              ← Back to DUAL AI Arena Home
+              ← Back to Arena Home
             </Link>
           </form>
         ) : (
           <div className="face-auth-step">
-            <h2>Face Registration</h2>
-            <p>Please look at the camera to register your face.</p>
             <FaceCapture
               onCapture={handleFaceCapture}
-              buttonText={loading ? "Processing…" : "Register Face"}
+              buttonText={loading ? "Registering..." : "Register Face Now"}
+              isRegistration={true}
             />
+
             <button
-              className="auth-button secondary back"
+              type="button"
+              className="auth-button secondary back mt-2"
               onClick={() => setShowFaceCapture(false)}
               disabled={loading}
             >
-              Back
+              <FaArrowLeft className="text-xs mr-1 inline" /> Back to Account Details
             </button>
           </div>
         )}

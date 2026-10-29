@@ -1,353 +1,320 @@
-import React, { useRef, useState, useEffect } from "react";
-import { getFaceDescriptor } from "../utils/face";
+import React, { useRef, useState, useEffect, useCallback } from "react";
+import { getFaceDescriptor, detectFaceLocation, loadModels } from "../utils/face";
+import { animate } from "animejs";
+import { 
+  FaCamera, 
+  FaCrosshairs, 
+  FaCircleCheck, 
+  FaTriangleExclamation,
+  FaBolt,
+  FaArrowRotateRight
+} from "react-icons/fa6";
 import "../styles/FaceCapture.css";
 
-const FaceCapture = ({ onCapture, buttonText = "Capture Face" }) => {
+const FaceCapture = ({ 
+  onCapture, 
+  buttonText = "Capture Face",
+  currentAttempt = 1,
+  maxAttempts = 2,
+  isRegistration = false
+}) => {
   const videoRef = useRef(null);
-  const canvasRef = useRef(null);
+  const flashRef = useRef(null);
+  const captureBtnRef = useRef(null);
+
   const [isCapturing, setIsCapturing] = useState(false);
   const [error, setError] = useState("");
   const [stream, setStream] = useState(null);
+  
+  // Real-time tracking state
+  const [faceStatus, setFaceStatus] = useState({
+    detected: false,
+    isCentered: false,
+    score: 0,
+    advice: "Position face in the center crosshairs",
+    box: null
+  });
 
-  // Listen for toast messages that require webcam cleanup
-  useEffect(() => {
-    const handleToastMessage = (event) => {
-      if (event.detail?.message?.includes("Login successful!") ||
-          event.detail?.message?.includes("Face is already registered")) {
-        stopWebcam();
-      }
-    };
+  // 3-second auto-capture countdown timer
+  const [countdown, setCountdown] = useState(null); // null or 3, 2, 1
+  const countdownIntervalRef = useRef(null);
 
-    document.addEventListener('toast', handleToastMessage);
-    return () => document.removeEventListener('toast', handleToastMessage);
-  }, []);
-
-  // Initialize webcam with optimized settings
+  // Initialize camera and start video stream
   useEffect(() => {
     let mounted = true;
-    let retryTimeout = null;
-    
-    const startVideo = async (retryCount = 0) => {
-      // Clear any existing error when attempting to start video
+
+    // Pre-warm models as soon as camera view opens
+    loadModels();
+
+    const startVideo = async () => {
       if (mounted) setError("");
-      
-      // Stop any existing stream before starting a new one
-      stopWebcam();
-      
       try {
-        // Optimize resolution for faster processing
-        // Use exact constraints for more consistent performance
         const constraints = {
-          video: { 
-            width: { ideal: 320, max: 400 },
-            height: { ideal: 240, max: 300 },
-            frameRate: { ideal: 15, max: 24 }, // Lower max framerate for better performance
-            facingMode: "user",
-            // Request lower resolution for mobile devices
-            resizeMode: "crop-and-scale",
-            // Prioritize performance over quality
-            deviceId: undefined // Let browser choose best camera
+          video: {
+            width: { ideal: 640 },
+            height: { ideal: 480 },
+            facingMode: "user"
           },
-          audio: false // Explicitly disable audio to save resources
+          audio: false
         };
-        
-        // Try to get stream with optimized settings
+
         const newStream = await navigator.mediaDevices.getUserMedia(constraints);
-        
-        // Check if component is still mounted before proceeding
         if (!mounted) {
-          // If component unmounted during async operation, clean up the stream
-          newStream.getTracks().forEach(track => track.stop());
+          newStream.getTracks().forEach(t => t.stop());
           return;
         }
-        
+
         if (videoRef.current) {
-          // Apply video element optimizations
-          const videoEl = videoRef.current;
-          
-          // Set attributes for better performance
-          videoEl.srcObject = newStream;
-          videoEl.setAttribute('playsinline', 'true');
-          videoEl.setAttribute('muted', 'true');
-          videoEl.setAttribute('autoplay', 'true');
-          
-          // Reduce memory usage and improve performance
-          videoEl.disablePictureInPicture = true;
-          videoEl.disableRemotePlayback = true;
-          
-          // Wait for metadata to load before playing to prevent auto-play errors
-          videoEl.onloadedmetadata = () => {
-            if (mounted && videoEl) {
-              videoEl.play().catch(e => {
-                console.log('Video play error:', e);
-                // If autoplay fails, retry with user interaction simulation
-                if (mounted && retryCount < 2) {
-                  retryTimeout = setTimeout(() => startVideo(retryCount + 1), 500);
-                }
-              });
-            }
-          };
-          
-          // Add error handler for video element
-          videoEl.onerror = (e) => {
-            console.error('Video element error:', e);
-            if (mounted && retryCount < 2) {
-              retryTimeout = setTimeout(() => startVideo(retryCount + 1), 1000);
-            }
-          };
-          
-          // Apply advanced video track settings for better performance
-          const videoTrack = newStream.getVideoTracks()[0];
-          if (videoTrack && videoTrack.getSettings) {
-            try {
-              // Get camera capabilities
-              const capabilities = videoTrack.getCapabilities && videoTrack.getCapabilities();
-              
-              if (capabilities) {
-                // Create advanced constraints object
-                const advancedConstraints = {};
-                
-                // Optimize white balance for better skin tone detection
-                if (capabilities.whiteBalanceMode && 
-                    capabilities.whiteBalanceMode.includes('continuous')) {
-                  advancedConstraints.whiteBalanceMode = 'continuous';
-                }
-                
-                // Optimize exposure for better low-light performance
-                if (capabilities.exposureMode && 
-                    capabilities.exposureMode.includes('continuous')) {
-                  advancedConstraints.exposureMode = 'continuous';
-                }
-                
-                // Apply all optimized constraints if available
-                if (Object.keys(advancedConstraints).length > 0 && mounted) {
-                  await videoTrack.applyConstraints({ advanced: [advancedConstraints] });
-                }
-              }
-            } catch (e) {
-              console.log('Advanced camera settings not supported:', e);
-            }
-          }
-          
-          // Add track ended event handler to detect if camera is disconnected
-          videoTrack.onended = () => {
-            console.log('Video track ended unexpectedly');
-            if (mounted && retryCount < 2) {
-              retryTimeout = setTimeout(() => startVideo(retryCount + 1), 1000);
-            }
-          };
-          
-          if (mounted) {
-            setStream(newStream);
-          } else {
-            // Clean up if component unmounted during async operations
-            newStream.getTracks().forEach(track => track.stop());
-          }
-        } else if (newStream) {
-          // Clean up if video ref is no longer available
-          newStream.getTracks().forEach(track => track.stop());
+          videoRef.current.srcObject = newStream;
+          videoRef.current.setAttribute("playsinline", "true");
+          videoRef.current.setAttribute("muted", "true");
+          videoRef.current.setAttribute("autoplay", "true");
+          await videoRef.current.play().catch(e => console.log("Play error:", e));
         }
+
+        if (mounted) setStream(newStream);
       } catch (err) {
         if (mounted) {
-          setError("Camera access denied or not available. Please enable camera access.");
-          console.error("Error accessing webcam:", err);
-          
-          // Retry camera access after a delay (only once)
-          if (retryCount < 1) {
-            retryTimeout = setTimeout(() => startVideo(retryCount + 1), 1500);
-          }
+          setError("Camera permission denied. Please allow camera access in your browser.");
         }
       }
     };
 
-    startVideo(0);
+    startVideo();
 
-    // Cleanup function to stop the video stream when component unmounts
     return () => {
       mounted = false;
-      if (retryTimeout) {
-        clearTimeout(retryTimeout);
-      }
       stopWebcam();
+      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
     };
   }, []);
 
-  const stopWebcam = () => {
-    // Get current stream from state and from video element (in case they're different)
-    const currentStream = stream;
-    const videoStream = videoRef.current?.srcObject;
-    
-    // Clean up the stream from state
-    if (currentStream) {
-      try {
-        const tracks = currentStream.getTracks();
-        tracks.forEach(track => {
-          try {
-            track.stop();
-            track.enabled = false; // Immediately disable track
-            // Force end event to trigger any listeners
-            try { track.dispatchEvent(new Event('ended')); } catch (e) {}
-            // Remove all event listeners to prevent memory leaks
-            track.onended = null;
-            track.onmute = null;
-            track.onunmute = null;
-          } catch (trackErr) {
-            console.log('Error stopping track:', trackErr);
-          }
-        });
-        
-        // Clear all stream event listeners
-        currentStream.onaddtrack = null;
-        currentStream.onremovetrack = null;
-        currentStream.onactive = null;
-        currentStream.oninactive = null;
-      } catch (streamErr) {
-        console.log('Error cleaning up stream:', streamErr);
-      }
+  const stopWebcam = useCallback(() => {
+    if (stream) {
+      stream.getTracks().forEach(track => {
+        track.stop();
+        track.enabled = false;
+      });
     }
-    
-    // Also clean up the video element's stream if it's different
-    if (videoStream && videoStream !== currentStream) {
-      try {
-        const tracks = videoStream.getTracks();
-        tracks.forEach(track => {
-          try {
-            track.stop();
-            track.enabled = false;
-          } catch (trackErr) {
-            console.log('Error stopping video element track:', trackErr);
-          }
-        });
-      } catch (videoStreamErr) {
-        console.log('Error cleaning up video stream:', videoStreamErr);
-      }
-    }
-    
-    // Clean up video element
     if (videoRef.current) {
-      try {
-        // Clear source and force garbage collection of media resources
-        videoRef.current.srcObject = null;
-        videoRef.current.pause();
-        videoRef.current.load(); // Force reload to clear buffer
-        
-        // Clear all event handlers
-        videoRef.current.onloadedmetadata = null;
-        videoRef.current.onloadeddata = null;
-        videoRef.current.onplay = null;
-        videoRef.current.onpause = null;
-        videoRef.current.onerror = null;
-      } catch (videoErr) {
-        console.log('Error cleaning up video element:', videoErr);
-      }
+      videoRef.current.srcObject = null;
     }
-    
-    // Update state
     setStream(null);
-  };
+  }, [stream]);
 
-  // Ensure canvas dimensions match video for optimal processing
-  useEffect(() => {
-    if (videoRef.current && canvasRef.current && videoRef.current.videoWidth) {
-      // Update canvas dimensions to match actual video dimensions
-      canvasRef.current.width = videoRef.current.videoWidth;
-      canvasRef.current.height = videoRef.current.videoHeight;
-    }
-  }, [stream]); // Update when stream changes
-
-  const handleCapture = async () => {
-    if (!videoRef.current) return;
-    
+  // Execute snapshot capture
+  const executeCapture = useCallback(async () => {
+    if (!videoRef.current || isCapturing) return;
     setIsCapturing(true);
     setError("");
-    
-    // Use a timeout to ensure UI updates before heavy processing begins
-    // This improves perceived performance
-    setTimeout(async () => {
+
+    // Trigger visual shutter flash using Anime.js
+    if (flashRef.current) {
+      flashRef.current.style.opacity = "1";
+      animate(flashRef.current, {
+        opacity: [1, 0],
+        duration: 350,
+        ease: "outExpo"
+      });
+    }
+
+    try {
+      const descriptor = await getFaceDescriptor(videoRef);
+      if (descriptor) {
+        stopWebcam();
+        onCapture(descriptor);
+      } else {
+        setError("Failed to extract clear face features. Try again with direct lighting.");
+      }
+    } catch (err) {
+      setError(err.message || "Face capture failed. Please center your face and try again.");
+    } finally {
+      setIsCapturing(false);
+      setCountdown(null);
+    }
+  }, [isCapturing, onCapture, stopWebcam]);
+
+  // Real-time face tracking loop (10Hz) for guidance, auto-zoom, and 3s countdown trigger
+  useEffect(() => {
+    if (!stream || isCapturing) return;
+
+    let isScanning = true;
+
+    const interval = setInterval(async () => {
+      if (!isScanning || !videoRef.current || videoRef.current.readyState < 2) return;
+
       try {
-        // Draw current video frame to canvas with proper dimensions
-        const canvas = canvasRef.current;
-        if (!canvas) {
-          setError("Canvas initialization failed. Please refresh the page.");
-          setIsCapturing(false);
-          return;
-        }
-        
-        const context = canvas.getContext("2d", { alpha: false, desynchronized: true, willReadFrequently: true });
-        
-        // Ensure canvas dimensions match video for optimal processing
-        if (canvas.width !== videoRef.current.videoWidth || canvas.height !== videoRef.current.videoHeight) {
-          canvas.width = videoRef.current.videoWidth;
-          canvas.height = videoRef.current.videoHeight;
-        }
-        
-        // Draw video frame to canvas with optimized settings
-        context.imageSmoothingEnabled = false; // Disable anti-aliasing for faster rendering
-        context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-        
-        // Implement retry logic for better reliability
-        let descriptor = null;
-        let attempts = 0;
-        const maxAttempts = 2; // Maximum number of attempts to detect face
-        
-        while (!descriptor && attempts < maxAttempts) {
-          try {
-            // Get face descriptor with optimized processing
-            descriptor = await getFaceDescriptor(videoRef);
-            break; // Exit loop if successful
-          } catch (detectionError) {
-            attempts++;
-            if (attempts >= maxAttempts) {
-              // Rethrow the last error if all attempts fail
-              throw detectionError;
-            }
-            // Short delay before retry
-            await new Promise(resolve => setTimeout(resolve, 200));
+        const result = await detectFaceLocation(videoRef.current);
+        if (!isScanning) return;
+
+        setFaceStatus(result);
+
+        // Auto-Capture logic:
+        if (result.isCentered && !isCapturing) {
+          // If countdown not started, start 3-second countdown
+          if (!countdownIntervalRef.current) {
+            let timeLeft = 3;
+            setCountdown(timeLeft);
+
+            countdownIntervalRef.current = setInterval(() => {
+              timeLeft -= 1;
+              if (timeLeft > 0) {
+                setCountdown(timeLeft);
+              } else {
+                clearInterval(countdownIntervalRef.current);
+                countdownIntervalRef.current = null;
+                setCountdown("SNAP!");
+                executeCapture();
+              }
+            }, 1000);
+          }
+        } else {
+          // If face moved away, cancel countdown
+          if (countdownIntervalRef.current) {
+            clearInterval(countdownIntervalRef.current);
+            countdownIntervalRef.current = null;
+            setCountdown(null);
           }
         }
-        
-        if (descriptor) {
-          stopWebcam(); // Stop webcam after successful capture
-          onCapture(descriptor);
-        } else {
-          setError("No face detected. Please ensure your face is clearly visible and well-lit.");
-        }
       } catch (err) {
-        setError(err.message || "Face capture failed. Please try again with better lighting.");
-        console.error("Face capture error:", err);
-      } finally {
-        setIsCapturing(false);
+        console.warn("Face tracking tick error:", err);
       }
-    }, 0); // Execute immediately after UI updates
+    }, 120);
+
+    return () => {
+      isScanning = false;
+      clearInterval(interval);
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current);
+        countdownIntervalRef.current = null;
+      }
+    };
+  }, [stream, isCapturing, executeCapture]);
+
+  // Dynamic interactive zoom scale based on face distance and center
+  const getZoomStyle = () => {
+    if (!faceStatus.detected || !faceStatus.box) {
+      return { transform: "scale(1.05) translate(0%, 0%)" };
+    }
+    const { centerX, centerY, faceRatio } = faceStatus.box;
+    // Zoom slightly closer if face is small, focal zoom onto head center
+    const zoomScale = Math.min(1.35, Math.max(1.08, 0.42 / Math.max(0.2, faceRatio)));
+    const tx = (0.5 - centerX) * 35;
+    const ty = (0.5 - centerY) * 35;
+    return {
+      transform: `scale(${zoomScale.toFixed(2)}) translate(${tx.toFixed(1)}%, ${ty.toFixed(1)}%)`,
+      transition: "transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1)"
+    };
+  };
+
+  const handleManualClick = () => {
+    if (captureBtnRef.current) {
+      animate(captureBtnRef.current, {
+        scale: [1, 0.92, 1.08, 1],
+        duration: 250,
+        ease: "outBack"
+      });
+    }
+    executeCapture();
   };
 
   return (
-    <div className="face-capture-container">
-      <div className="video-container">
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          muted
-          width="400"
-          height="300"
-        />
-        <canvas
-          ref={canvasRef}
-          width="400"
-          height="300"
-          style={{ display: "none" }}
-        />
+    <div className="face-kiosk-container">
+      {/* Top Header Strip: Attempt Badge & Mode */}
+      <div className="face-header-strip">
+        <span className="kiosk-mode-tag">
+          <FaBolt className="text-amber-500 text-[10px]" />
+          {isRegistration ? "REGISTRATION SCAN" : "BIOMETRIC AUTH"}
+        </span>
+
+        {!isRegistration && (
+          <span className={`kiosk-attempt-pill ${currentAttempt > 1 ? "final" : ""}`}>
+            ATTEMPT {currentAttempt} OF {maxAttempts}
+          </span>
+        )}
       </div>
-      
-      {error && <div className="error-message">{error}</div>}
-      
+
+      {/* Neo-Brutalist Rounded Square Viewfinder with Crosshair Brackets */}
+      <div className={`biometric-viewfinder-box ${faceStatus.isCentered ? "locked" : faceStatus.detected ? "detected" : "searching"}`}>
+        {/* Real-time Video Stream with Interactive Face Zoom */}
+        <div className="biometric-video-cropper">
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className="biometric-video-element"
+            style={getZoomStyle()}
+          />
+        </div>
+
+        {/* Shutter Flash Animation Overlay */}
+        <div ref={flashRef} className="shutter-flash-overlay"></div>
+
+        {/* 4 Neo-Brutalist Corner Crosshair Brackets */}
+        <span className="crosshair-bracket top-left"></span>
+        <span className="crosshair-bracket top-right"></span>
+        <span className="crosshair-bracket bottom-left"></span>
+        <span className="crosshair-bracket bottom-right"></span>
+
+        {/* Center Aiming Reticle */}
+        <div className="center-aim-reticle">
+          <FaCrosshairs className={`reticle-icon ${faceStatus.isCentered ? "locked" : ""}`} />
+        </div>
+
+        {/* Animated Laser Scanning Line */}
+        <div className={`laser-scanner-line ${faceStatus.isCentered ? "locked" : ""}`}></div>
+
+        {/* 3-Second Countdown Overlay Badge */}
+        {countdown !== null && (
+          <div className="countdown-lock-badge">
+            <span className="countdown-number">{countdown}</span>
+            <span className="countdown-label">{countdown === "SNAP!" ? "CAPTURING..." : "HOLD STEADY"}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Live Biometric Guidance Pill */}
+      <div className={`guidance-status-pill ${faceStatus.isCentered ? "success" : faceStatus.detected ? "warning" : "info"}`}>
+        {faceStatus.isCentered ? (
+          <FaCircleCheck className="text-emerald-500 text-xs shrink-0" />
+        ) : faceStatus.detected ? (
+          <FaTriangleExclamation className="text-amber-600 text-xs shrink-0" />
+        ) : (
+          <FaCamera className="text-blue-600 text-xs shrink-0" />
+        )}
+        <span className="guidance-text">
+          {countdown !== null ? `Auto-capturing in ${countdown}... Hold steady!` : faceStatus.advice}
+        </span>
+      </div>
+
+      {/* Diagnostic Error Box */}
+      {error && (
+        <div className="biometric-diagnostic-error">
+          <FaTriangleExclamation className="text-rose-600 shrink-0 text-sm" />
+          <span>{error}</span>
+        </div>
+      )}
+
+      {/* Action Button: Fast manual snap trigger */}
       <button
-        className="capture-button"
-        onClick={handleCapture}
+        ref={captureBtnRef}
+        type="button"
+        className="kiosk-action-btn"
+        onClick={handleManualClick}
         disabled={isCapturing}
       >
-        {isCapturing ? "Processing..." : buttonText}
+        {isCapturing ? (
+          <>
+            <FaArrowRotateRight className="animate-spin text-sm" />
+            <span>Analyzing Features...</span>
+          </>
+        ) : (
+          <>
+            <FaCamera className="text-sm" />
+            <span>{buttonText}</span>
+          </>
+        )}
       </button>
     </div>
   );

@@ -1,98 +1,350 @@
-.face-capture-container {
+/* ==========================================================================
+   NEO-BRUTALIST BIOMETRIC FACE KIOSK STYLES
+   Zero-Scroll Viewport Layout, Corner Crosshairs, Shutter Flash, Hard Shadows
+========================================================================== */
+
+.face-kiosk-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
-  padding: 1.5rem;
-  animation: fadeIn 0.5s ease-out;
+  gap: 0.65rem;
+  width: 100%;
+  max-width: 380px;
+  margin: 0 auto;
 }
 
-.video-container {
+/* Header Strip: Mode tag + Attempt Counter */
+.face-header-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 2px;
+}
+
+.kiosk-mode-tag {
+  font-family: "Space Grotesk", monospace;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background-color: #FFFDF6;
+  color: #111111;
+  border: 2px solid #111111;
+  box-shadow: 2px 2px 0px #111111;
+  border-radius: 8px;
+  padding: 3px 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.kiosk-attempt-pill {
+  font-family: "Space Grotesk", monospace;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  background-color: #FFDE59;
+  color: #111111;
+  border: 2px solid #111111;
+  box-shadow: 2px 2px 0px #111111;
+  border-radius: 8px;
+  padding: 3px 8px;
+}
+
+.kiosk-attempt-pill.final {
+  background-color: #FF5470;
+  color: #FFFFFF;
+}
+
+/* Biometric Viewfinder: Rounded Square with Crosshair Brackets */
+.biometric-viewfinder-box {
   position: relative;
-  width: 100%;
-  max-width: 400px;
-  border-radius: 12px;
+  width: 250px;
+  height: 250px;
+  border-radius: 24px;
+  border: 3.5px solid #111111;
+  box-shadow: 5px 5px 0px #111111;
+  background-color: #121216;
   overflow: hidden;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.video-container:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+.biometric-viewfinder-box.locked {
+  border-color: #00E599;
+  box-shadow: 5px 5px 0px #00E599;
 }
 
-video {
+.biometric-viewfinder-box.detected {
+  border-color: #FFDE59;
+}
+
+.biometric-viewfinder-box.searching {
+  border-color: #111111;
+}
+
+/* Video Frame Cropper with Smooth Interactive Zoom */
+.biometric-video-cropper {
   width: 100%;
-  height: auto;
-  display: block;
-  background: #000;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.capture-button {
-  padding: 0.75rem 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+.biometric-video-element {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform-origin: center center;
+  filter: contrast(1.05) saturate(1.08);
+  will-change: transform;
 }
 
-.capture-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+/* Corner Crosshair Brackets (Neo-Brutalist HUD marks) */
+.crosshair-bracket {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-color: #FFFFFF;
+  border-style: solid;
+  pointer-events: none;
+  z-index: 10;
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.8));
 }
 
-.capture-button:disabled {
-  background: #a0aec0;
-  transform: none;
-  box-shadow: none;
-  cursor: not-allowed;
+.crosshair-bracket.top-left {
+  top: 10px;
+  left: 10px;
+  border-width: 3.5px 0 0 3.5px;
+  border-top-left-radius: 8px;
 }
 
-.error-message {
-  color: #e53e3e;
-  font-size: 0.875rem;
-  text-align: center;
-  max-width: 400px;
-  padding: 0.5rem 1rem;
-  background: rgba(229, 62, 62, 0.1);
-  border-radius: 8px;
-  animation: shake 0.5s ease;
+.crosshair-bracket.top-right {
+  top: 10px;
+  right: 10px;
+  border-width: 3.5px 3.5px 0 0;
+  border-top-right-radius: 8px;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
+.crosshair-bracket.bottom-left {
+  bottom: 10px;
+  left: 10px;
+  border-width: 0 0 3.5px 3.5px;
+  border-bottom-left-radius: 8px;
+}
+
+.crosshair-bracket.bottom-right {
+  bottom: 10px;
+  right: 10px;
+  border-width: 0 3.5px 3.5px 0;
+  border-bottom-right-radius: 8px;
+}
+
+.biometric-viewfinder-box.locked .crosshair-bracket {
+  border-color: #00E599;
+}
+
+/* Center Aiming Reticle */
+.center-aim-reticle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 9;
+  opacity: 0.5;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.reticle-icon {
+  font-size: 32px;
+  color: #FFFFFF;
+  filter: drop-shadow(1px 1px 0 #000);
+}
+
+.reticle-icon.locked {
+  color: #00E599;
+  opacity: 0.9;
+  transform: scale(1.15);
+}
+
+/* Laser Scanning Line Animation */
+.laser-scanner-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #FFDE59, #00E599, transparent);
+  box-shadow: 0 0 8px #00E599;
+  z-index: 8;
+  animation: laserScan 2.4s ease-in-out infinite alternate;
+}
+
+.laser-scanner-line.locked {
+  background: #00E599;
+  box-shadow: 0 0 12px #00E599;
+}
+
+@keyframes laserScan {
+  0% {
+    top: 10%;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes shake {
-  0%,
   100% {
-    transform: translateX(0);
-  }
-  20%,
-  60% {
-    transform: translateX(-5px);
-  }
-  40%,
-  80% {
-    transform: translateX(5px);
+    top: 90%;
   }
 }
 
-@media (max-width: 768px) {
-  .video-container {
-    max-width: 300px;
+/* Shutter Flash Effect */
+.shutter-flash-overlay {
+  position: absolute;
+  inset: 0;
+  background-color: #FFFFFF;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 25;
+}
+
+/* 3-Second Countdown Lock Badge */
+.countdown-lock-badge {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #00E599;
+  color: #111111;
+  border: 3px solid #111111;
+  box-shadow: 3px 3px 0px #111111;
+  border-radius: 9999px;
+  padding: 4px 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  z-index: 20;
+  animation: pulseBadge 0.6s infinite alternate;
+}
+
+.countdown-number {
+  font-family: "Space Grotesk", monospace;
+  font-size: 16px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.countdown-label {
+  font-family: "Fredoka", sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+@keyframes pulseBadge {
+  0% { transform: translateX(-50%) scale(1); }
+  100% { transform: translateX(-50%) scale(1.08); }
+}
+
+/* Live Biometric Guidance Status Pill */
+.guidance-status-pill {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 2.5px solid #111111;
+  box-shadow: 2px 2px 0px #111111;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  background-color: #FFFDF6;
+  color: #111111;
+  transition: all 0.2s ease;
+}
+
+.guidance-status-pill.success {
+  background-color: #e6fcf5;
+  border-color: #00E599;
+  color: #087f5b;
+}
+
+.guidance-status-pill.warning {
+  background-color: #fff9db;
+  border-color: #fab005;
+  color: #d9480f;
+}
+
+.guidance-status-pill.info {
+  background-color: #e7f5ff;
+  border-color: #339af0;
+  color: #1c7ed6;
+}
+
+.guidance-text {
+  line-height: 1.2;
+}
+
+/* Diagnostic Error Message Box */
+.biometric-diagnostic-error {
+  width: 100%;
+  background-color: #ffe3e3;
+  color: #c92a2a;
+  border: 2px solid #e03131;
+  box-shadow: 2px 2px 0px #111111;
+  border-radius: 10px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-align: left;
+}
+
+/* Action Snap Button */
+.kiosk-action-btn {
+  width: 100%;
+  background-color: var(--pop-yellow);
+  color: #111111;
+  border: 3px solid #111111;
+  box-shadow: 4px 4px 0px #111111;
+  border-radius: 14px;
+  padding: 10px 16px;
+  font-family: "Fredoka", sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  user-select: none;
+}
+
+.kiosk-action-btn:hover:not(:disabled) {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px #111111;
+  background-color: #ffe677;
+}
+
+.kiosk-action-btn:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px #111111;
+}
+
+.kiosk-action-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+@media (max-width: 480px) {
+  .biometric-viewfinder-box {
+    width: 220px;
+    height: 220px;
   }
 }
