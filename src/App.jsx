@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { animate, stagger } from "animejs";
 import "./App.css";
 import ChatMessage from "./components/ChatMessage";
+import DualArenaLogo from "./components/DualArenaLogo";
 import ChatHistory from "./components/ChatHistory";
 import VoiceButton from "./components/VoiceButton";
 import { generateLlamaResponse, generateDeepseekResponse } from "./utils/api";
@@ -25,7 +26,8 @@ import {
   FaSun,
   FaCheck,
   FaArrowDown,
-  FaTrophy
+  FaTrophy,
+  FaRightFromBracket
 } from "react-icons/fa6";
 
 const STARTER_PROMPTS = [
@@ -102,6 +104,7 @@ function App() {
     },
   ]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [currentChatId, setCurrentChatId] = useState(null);
 
   // Animation Refs
@@ -502,9 +505,7 @@ function App() {
           {/* Brand & Championship Emblem */}
           <div className="flex items-center gap-2 sm:gap-3">
             <h1 className="heading">
-              <span className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-popYellow via-amber-300 to-popOrange border-3 border-black flex items-center justify-center text-sm shadow-neo-sm transform hover:scale-105 active:scale-95 transition-all text-black shrink-0">
-                <FaBoltLightning className="text-base text-black" />
-              </span>
+              <DualArenaLogo size={38} className="shrink-0" />
               <div className="flex flex-col">
                 <div className="flex items-center gap-1.5">
                   <span className="tracking-tight font-black font-display text-lg sm:text-xl leading-none">
@@ -600,14 +601,14 @@ function App() {
               </button>
             )}
 
-            <Link
-              to="/"
-              className="header-action-btn"
-              title="Return to Home Landing Page"
-              aria-label="Home"
+            <button
+              onClick={() => setShowLogoutModal(true)}
+              className="header-action-btn text-rose-600 hover:bg-rose-50 hover:border-rose-600"
+              title="Sign out of Arena session"
+              aria-label="Sign out"
             >
-              <FaHouse className="text-xs" />
-            </Link>
+              <FaRightFromBracket className="text-xs" />
+            </button>
 
             <button
               className="theme-toggle"
@@ -636,6 +637,14 @@ function App() {
                 isHistory={message.isHistory || false}
                 winner={message.winner || null}
                 onVoteWinner={(modelKey, e) => handleVoteWinner(message.id, modelKey, e)}
+                onSelectPrompt={(text) => {
+                  setPrompt(text);
+                  const ta = document.querySelector('.chatbot_input textarea');
+                  if (ta) {
+                    ta.focus();
+                    ta.style.height = 'auto';
+                  }
+                }}
               />
             ))}
 
@@ -716,6 +725,42 @@ function App() {
           </div>
         </div>
       </main>
+    
+      {/* Neo-Brutalist Secure Logout Confirmation Modal */}
+      {showLogoutModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm message-enter">
+          <div className="bg-[#FFFDF6] dark:bg-[#1A1A24] border-3 border-black dark:border-white rounded-3xl p-6 sm:p-7 max-w-sm w-full shadow-neo-lg text-center">
+            <div className="w-14 h-14 bg-rose-100 border-2 border-black rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-neo-sm text-rose-600">
+              <FaRightFromBracket className="text-xl" />
+            </div>
+            <h3 className="font-display font-black text-xl text-black dark:text-white mb-2">
+              Sign Out of Arena?
+            </h3>
+            <p className="text-xs text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">
+              You are signed in as <span className="font-bold text-black dark:text-white">"{user?.username}"</span>. Leaving will end your active arena session until your next face authentication.
+            </p>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setShowLogoutModal(false)}
+                className="flex-1 py-2.5 px-4 rounded-xl border-2 border-black font-bold text-xs bg-white dark:bg-zinc-800 text-black dark:text-white shadow-neo-sm hover:bg-gray-100 transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowLogoutModal(false);
+                  logout();
+                }}
+                className="flex-1 py-2.5 px-4 rounded-xl border-2 border-black font-extrabold text-xs bg-rose-500 hover:bg-rose-600 text-white shadow-neo-sm transition-all cursor-pointer"
+              >
+                Sign Out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

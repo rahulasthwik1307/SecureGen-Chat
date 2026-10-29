@@ -1,5 +1,7 @@
 import React, { useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import DualArenaLogo from "./DualArenaLogo";
+import { useAuth } from "../contexts/AuthContext";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
@@ -68,6 +70,7 @@ const FAQS = [
 ];
 
 export default function Welcome() {
+  const { user } = useAuth();
   const containerRef = useRef(null);
   const pinnedRef = useRef(null);
   const marqueeRef = useRef(null);
@@ -160,9 +163,7 @@ export default function Welcome() {
         <div className="max-w-7xl mx-auto bg-white border-3 border-black shadow-neo rounded-2xl px-6 py-3 flex items-center justify-between">
           {/* Logo Badge */}
           <Link to="/" className="flex items-center gap-3 group focus:outline-none focus-visible:ring-4 focus-visible:ring-popYellow rounded-lg">
-            <div className="w-11 h-11 bg-popYellow border-3 border-black rounded-xl flex items-center justify-center text-xl text-black shadow-neo-sm group-hover:rotate-6 transition-transform">
-              <FaRobot />
-            </div>
+            <DualArenaLogo size={42} className="shrink-0" />
             <div className="flex flex-col">
               <span className="font-display font-black text-2xl tracking-tight leading-none text-black flex items-center gap-2">
                 DUAL<span className="text-popPink">.AI</span>
