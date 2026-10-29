@@ -2,10 +2,27 @@
 // Configured for beautiful, structured layouts, rich markdown tables & authentic reasoning
 import Groq from "groq-sdk";
 
-const groq = new Groq({
-  apiKey: import.meta.env.VITE_API_GROQ_KEY,
-  dangerouslyAllowBrowser: true
-});
+// Helper to get or initialize a fresh Groq client with sanitized key
+const getGroqClient = () => {
+  const envKey = import.meta.env.VITE_API_GROQ_KEY;
+  const localKey = typeof window !== 'undefined' ? localStorage.getItem('GROQ_API_KEY') : null;
+  const apiKey = (envKey || localKey || '').trim();
+
+  if (!apiKey) {
+    throw new Error("Missing Groq API Key! Please verify VITE_API_GROQ_KEY in your .env file and restart your Vite dev server.");
+  }
+
+  return new Groq({
+    apiKey,
+    dangerouslyAllowBrowser: true
+  });
+};
+
+export const hasApiKey = () => {
+  const envKey = import.meta.env.VITE_API_GROQ_KEY;
+  const localKey = typeof window !== 'undefined' ? localStorage.getItem('GROQ_API_KEY') : null;
+  return Boolean((envKey || localKey || '').trim());
+};
 
 // Helper to validate response completeness
 const isCompleteResponse = (text) => {
@@ -30,6 +47,10 @@ const fetchWithRetry = async (fetchFn, retries = MAX_RETRIES) => {
     }
     return result;
   } catch (error) {
+    // If it's an authentication error (401), retrying won't help
+    if (error?.status === 401 || (error?.message && error.message.includes("401"))) {
+      throw error;
+    }
     if (retries > 0) {
       await new Promise(resolve => setTimeout(resolve, BASE_DELAY));
       return fetchWithRetry(fetchFn, retries - 1);
@@ -42,6 +63,7 @@ const fetchWithRetry = async (fetchFn, retries = MAX_RETRIES) => {
 export const generateLlamaResponse = async (prompt) => {
   return fetchWithRetry(async () => {
     try {
+      const groq = getGroqClient();
       const completion = await groq.chat.completions.create({
         model: "qwen/qwen3.8-27b",
         messages: [
@@ -57,6 +79,9 @@ export const generateLlamaResponse = async (prompt) => {
       return completion.choices[0]?.message?.content || "⚠️ No response generated";
     } catch (error) {
       console.error("Fast Model (Qwen) API error:", error);
+      if (error?.status === 401 || (error?.message && error.message.includes("401"))) {
+        return `⚠️ Fast Model Error: 401 Invalid API Key. Please restart your Vite dev server (Ctrl+C, then npm run dev) to load the new .env key, and refresh your browser tab.`;
+      }
       return `⚠️ Fast Model Error: ${error.message}`;
     }
   });
@@ -66,6 +91,7 @@ export const generateLlamaResponse = async (prompt) => {
 export const generateDeepseekResponse = async (prompt) => {
   return fetchWithRetry(async () => {
     try {
+      const groq = getGroqClient();
       const completion = await groq.chat.completions.create({
         model: "openai/gpt-oss-120b",
         messages: [
@@ -93,6 +119,9 @@ export const generateDeepseekResponse = async (prompt) => {
       return content || "⚠️ No response generated";
     } catch (error) {
       console.error("Reasoning Model (GPT-OSS) API error:", error);
+      if (error?.status === 401 || (error?.message && error.message.includes("401"))) {
+        return `⚠️ Reasoning Model Error: 401 Invalid API Key. Please restart your Vite dev server (Ctrl+C, then npm run dev) to load the new .env key, and refresh your browser tab.`;
+      }
       return `⚠️ Reasoning Model Error: ${error.message}`;
     }
   });
