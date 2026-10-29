@@ -99,7 +99,24 @@ const Register = () => {
   return (
     <div className="auth-container">
       <div className="auth-card" role="main">
-        <h1 className="auth-title">Create Account</h1>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+          <div style={{
+            width: '56px',
+            height: '56px',
+            backgroundColor: '#FF5470',
+            border: '3px solid #111111',
+            borderRadius: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '26px',
+            boxShadow: '3px 3px 0px #111111',
+            transform: 'rotate(4deg)'
+          }}>
+            🚀
+          </div>
+        </div>
+        <h1 className="auth-title">Create Free Account</h1>
         <p className="auth-subtitle">
           Secure your account with face authentication
         </p>
@@ -166,6 +183,9 @@ const Register = () => {
                 Sign In
               </Link>
             </p>
+            <Link to="/" className="auth-home-link">
+              ← Back to DUAL AI Arena Home
+            </Link>
           </form>
         ) : (
           <div className="face-auth-step">

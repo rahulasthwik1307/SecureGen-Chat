@@ -1,4 +1,5 @@
-// Updated api.js with anti-truncation measures
+// Updated api.js with Qwen (Fast) and OpenAI GPT-OSS (Reasoning)
+// Configured for beautiful, structured layouts, rich markdown tables & authentic reasoning
 import Groq from "groq-sdk";
 
 const groq = new Groq({
@@ -8,13 +9,14 @@ const groq = new Groq({
 
 // Helper to validate response completeness
 const isCompleteResponse = (text) => {
-  if (!text) return false;
-  // Check for proper sentence termination
-  const hasProperEnding = /[.!?]\s*$/.test(text);
-  // Check for balanced tags in thinking process
-  const thinkTagsBalanced = (text.match(/<think>/g) || []).length === 
-                          (text.match(/<\/think>/g) || []).length;
-  return hasProperEnding && thinkTagsBalanced;
+  if (!text || typeof text !== "string") return false;
+  const trimmed = text.trim();
+  if (trimmed.length === 0) return false;
+
+  // Check for balanced tags in thinking process if present
+  const thinkTagsBalanced = (trimmed.match(/<think>/g) || []).length === 
+                            (trimmed.match(/<\/think>/g) || []).length;
+  return thinkTagsBalanced;
 };
 
 const MAX_RETRIES = 2;
@@ -24,7 +26,7 @@ const fetchWithRetry = async (fetchFn, retries = MAX_RETRIES) => {
   try {
     const result = await fetchFn();
     if (!isCompleteResponse(result)) {
-      throw new Error('Incomplete response detected');
+      throw new Error("Incomplete response detected");
     }
     return result;
   } catch (error) {
@@ -36,58 +38,62 @@ const fetchWithRetry = async (fetchFn, retries = MAX_RETRIES) => {
   }
 };
 
+// Left Model: Fast Model (Qwen 3.8 27B) - Formats with markdown tables, lists & bold highlights
 export const generateLlamaResponse = async (prompt) => {
   return fetchWithRetry(async () => {
     try {
       const completion = await groq.chat.completions.create({
-        model: "meta-llama/llama-4-maverick-17b-128e-instruct",
-        messages: [{ role: "user", content: prompt }],
-        max_tokens: 2048 // Explicit token limit
+        model: "qwen/qwen3.8-27b",
+        messages: [
+          {
+            role: "system",
+            content: "You are a fast, articulate AI assistant. Deliver answers with outstanding layout: use structured markdown headings, clean bullet points, bold key concepts, and formatted comparison tables with clear column headers whenever comparing options or presenting multi-attribute data. Be direct and avoid empty conversational filler."
+          },
+          { role: "user", content: prompt }
+        ],
+        temperature: 0.7,
+        max_tokens: 1500
       });
       return completion.choices[0]?.message?.content || "⚠️ No response generated";
     } catch (error) {
-      console.error("Groq API error:", error);
-      return `⚠️ Llama-4 Error: ${error.message}`;
+      console.error("Fast Model (Qwen) API error:", error);
+      return `⚠️ Fast Model Error: ${error.message}`;
     }
   });
 };
 
+// Right Model: Reasoning Model (OpenAI GPT-OSS 120B) - Deep step-by-step thinking & beautiful formatting
 export const generateDeepseekResponse = async (prompt) => {
   return fetchWithRetry(async () => {
     try {
       const completion = await groq.chat.completions.create({
-        model: "deepseek-r1-distill-llama-70b",
-        messages: [{
-          role: "user",
-          content: `Please reason step by step. Wrap the reasoning inside <think>...</think> tags. Then give the final answer.\n\nQuestion:\n${prompt}`
-        }],
-        temperature: 0.6,
-        max_tokens: 2048, // Increased from 1024
-        top_p: 0.95,
-        stream: true,
-        reasoning_format: "raw"
+        model: "openai/gpt-oss-120b",
+        messages: [
+          {
+            role: "system",
+            content: "You are a deep analytical reasoning engine. Think carefully step-by-step through the core logic, principles, and trade-offs. Then deliver a beautifully structured, comprehensive final answer using markdown tables for comparisons, numbered steps for procedures, and clear bold headings. Keep your thought process analytical and direct."
+          },
+          { role: "user", content: prompt }
+        ],
+        reasoning_effort: "medium", // Provides authentic step-by-step logic while keeping tokens bounded
+        max_tokens: 1500
       });
 
-      let fullResponse = "";
-      let isComplete = false;
+      const message = completion.choices[0]?.message;
+      if (!message) return "⚠️ No response generated";
 
-      for await (const chunk of completion) {
-        const content = chunk.choices[0]?.delta?.content || "";
-        fullResponse += content;
-        // Check if this is the final chunk
-        if (chunk.choices[0]?.finish_reason === "stop") {
-          isComplete = true;
-        }
+      const reasoning = message.reasoning ? message.reasoning.trim() : "";
+      const content = message.content ? message.content.trim() : "";
+
+      // Format with <think> tag so ChatMessage renders the collapsible reasoning drawer
+      if (reasoning) {
+        return `<think>\n${reasoning}\n</think>\n\n${content}`;
       }
 
-      if (!isComplete || !isCompleteResponse(fullResponse)) {
-        throw new Error('Stream ended prematurely');
-      }
-
-      return fullResponse || "⚠️ No response generated";
+      return content || "⚠️ No response generated";
     } catch (error) {
-      console.error("Deepseek API error:", error);
-      return `⚠️ Deepseek Error: ${error.message}`;
+      console.error("Reasoning Model (GPT-OSS) API error:", error);
+      return `⚠️ Reasoning Model Error: ${error.message}`;
     }
   });
 };

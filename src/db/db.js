@@ -1,9 +1,10 @@
 import Dexie from "dexie";
 
 export const db = new Dexie("ChatbotAuthDB");
-db.version(3).stores({
-  users: "&username", // primary key: username (changed from email)
-  chats: "++id, username" // primary key: auto-incremented id, index: username (changed from userEmail)
+db.version(4).stores({
+  users: "&username", // primary key: username
+  chats: "++id, username", // primary key: auto-incremented id, index: username
+  chatSessions: "++id, userId, timestamp" // new table for chat history
 });
 
 // Helper functions for user operations
@@ -54,15 +55,77 @@ export async function getUserChat(username) {
   }
 }
 
-export async function clearUserChat(userEmail) {
+export async function clearUserChat(username) {
   try {
     await db.chats
-      .where("userEmail")
-      .equals(userEmail)
+      .where("username")
+      .equals(username)
       .delete();
     return true;
   } catch (error) {
     console.error("Error clearing chat:", error);
     return false;
+  }
+}
+
+// New functions for chat sessions
+export async function saveChatSession(userId, messages) {
+  try {
+    const timestamp = new Date().toISOString();
+    const id = await db.chatSessions.add({
+      userId,
+      timestamp,
+      messages
+    });
+    return { id, timestamp };
+  } catch (error) {
+    console.error("Error saving chat session:", error);
+    throw error;
+  }
+}
+
+export async function getChatSessions(userId) {
+  try {
+    return await db.chatSessions
+      .where("userId")
+      .equals(userId)
+      .reverse()
+      .sortBy("timestamp");
+  } catch (error) {
+    console.error("Error getting chat sessions:", error);
+    throw error;
+  }
+}
+
+export async function getChatSessionById(id) {
+  try {
+    return await db.chatSessions.get(id);
+  } catch (error) {
+    console.error("Error getting chat session:", error);
+    throw error;
+  }
+}
+
+export async function deleteChatSession(id) {
+  try {
+    await db.chatSessions.delete(id);
+    return true;
+  } catch (error) {
+    console.error("Error deleting chat session:", error);
+    return false;
+  }
+}
+
+export async function updateChatSession(id, messages) {
+  try {
+    const timestamp = new Date().toISOString();
+    await db.chatSessions.update(id, {
+      timestamp,
+      messages
+    });
+    return { id, timestamp };
+  } catch (error) {
+    console.error("Error updating chat session:", error);
+    throw error;
   }
 }

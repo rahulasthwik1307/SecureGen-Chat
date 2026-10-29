@@ -88,8 +88,25 @@ const Login = () => {
   return (
     <div className="auth-container">
       <div className="auth-card" role="main">
-        <h1 className="auth-title">Welcome Back</h1>
-        <p className="auth-subtitle">Sign in to continue to your chat</p>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
+          <div style={{
+            width: '56px',
+            height: '56px',
+            backgroundColor: '#FFDE59',
+            border: '3px solid #111111',
+            borderRadius: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '26px',
+            boxShadow: '3px 3px 0px #111111',
+            transform: 'rotate(-4deg)'
+          }}>
+            🤖
+          </div>
+        </div>
+        <h1 className="auth-title">Welcome Back!</h1>
+        <p className="auth-subtitle">Sign in to continue to your Dual AI Arena</p>
 
         {!showFaceCapture ? (
           <form className="auth-form" onSubmit={handleSubmit} noValidate>
@@ -134,9 +151,12 @@ const Login = () => {
             <p className="auth-link">
               Don't have an account?{" "}
               <Link to="/register" className="link">
-                Register
+                Register Free
               </Link>
             </p>
+            <Link to="/" className="auth-home-link">
+              ← Back to DUAL AI Arena Home
+            </Link>
           </form>
         ) : (
           <div className="face-auth-step">

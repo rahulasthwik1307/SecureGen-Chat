@@ -2,82 +2,127 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Your custom styles below */
-
-/* 1) Make root elements fill the viewport */
-html,
-body,
-#root {
-  height: 100%;
-  margin: 0;
-}
-
-/* Base typography & colors */
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
+  font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
   color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+html {
+  scroll-behavior: smooth;
+  height: 100%;
 }
 
-/* 2) Remove flex‐centering so your <App> can stretch to 100% */
 body {
   margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-  background-color: #242424;
+  min-height: 100%;
+  background-color: #FFFDF6;
+  color: #111111;
+  font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+#root {
+  min-height: 100%;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
+/* Halftone Pop Dot Pattern */
+.bg-halftone-dots {
+  background-image: radial-gradient(#111111 1.2px, transparent 1.2px);
+  background-size: 24px 24px;
+}
+
+.bg-halftone-dots-light {
+  background-image: radial-gradient(rgba(17, 17, 17, 0.08) 1.5px, transparent 1.5px);
+  background-size: 20px 20px;
+}
+
+.bg-comic-grid {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+}
+
+/* Neo-Brutalist Tactile Styles */
+.neo-box {
+  border: 3px solid #111111;
+  box-shadow: 4px 4px 0px #111111;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.neo-box-lg {
+  border: 3px solid #111111;
+  box-shadow: 6px 6px 0px #111111;
+}
+
+.neo-box-xl {
+  border: 4px solid #111111;
+  box-shadow: 8px 8px 0px #111111;
+}
+
+.neo-btn {
+  border: 3px solid #111111;
+  box-shadow: 4px 4px 0px #111111;
+  font-weight: 700;
+  transition: transform 0.12s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.12s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  user-select: none;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
+.neo-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px #111111;
+}
+
+.neo-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px #111111;
+}
+
+.neo-btn:focus-visible {
+  outline: 3px dashed #111111;
+  outline-offset: 3px;
+}
+
+/* Sticker badge tilt effects */
+.badge-tilt-left {
+  transform: rotate(-2.5deg);
+}
+.badge-tilt-right {
+  transform: rotate(3deg);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #FFFDF6;
+  border-left: 2px solid #111111;
+}
+::-webkit-scrollbar-thumb {
+  background: #FFDE59;
+  border: 2px solid #111111;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #FF5470;
+}
+
+/* Accessibility: Respect Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
