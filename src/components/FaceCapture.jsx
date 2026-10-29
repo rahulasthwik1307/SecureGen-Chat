@@ -3,7 +3,6 @@ import { getFaceDescriptor, detectFaceLocation, loadModels } from "../utils/face
 import { animate } from "animejs";
 import { 
   FaCamera, 
-  FaCrosshairs, 
   FaCircleCheck, 
   FaTriangleExclamation,
   FaBolt,
@@ -31,7 +30,7 @@ const FaceCapture = ({
     detected: false,
     isCentered: false,
     score: 0,
-    advice: "Position face in the center crosshairs",
+    advice: "Position face inside the frame",
     box: null
   });
 
@@ -256,11 +255,6 @@ const FaceCapture = ({
         <span className="crosshair-bracket top-right"></span>
         <span className="crosshair-bracket bottom-left"></span>
         <span className="crosshair-bracket bottom-right"></span>
-
-        {/* Center Aiming Reticle */}
-        <div className="center-aim-reticle">
-          <FaCrosshairs className={`reticle-icon ${faceStatus.isCentered ? "locked" : ""}`} />
-        </div>
 
         {/* Animated Laser Scanning Line */}
         <div className={`laser-scanner-line ${faceStatus.isCentered ? "locked" : ""}`}></div>
