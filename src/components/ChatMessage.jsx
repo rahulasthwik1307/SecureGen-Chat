@@ -547,121 +547,60 @@ const ChatMessage = ({
     return clean ? clean.split(/\s+/).length : 0;
   };
 
-  // 1. Initial Welcome Banner - Arena Championship Deck with Live Starter Prompts
+  // 1. Initial Welcome Banner - Minimal Zero-Scroll Prompt Launcher (No AI Slop)
   if (content && typeof content === 'object' && content.showSingle) {
     const starterPrompts = [
       {
         icon: "⚡",
         title: "Speed vs Scalability",
+        desc: "Compare SQL vs NoSQL with markdown table",
         query: "Compare SQL vs NoSQL for building high-scale real-time web applications. Provide a clear comparison table."
       },
       {
         icon: "🧠",
         title: "Deep Physics Logic",
+        desc: "Quantum Entanglement for child vs undergrad",
         query: "Explain Quantum Entanglement step-by-step: first to a 10-year-old, then to an undergraduate physics student."
       },
       {
-        icon: "⚖️",
-        title: "Socio-Economic Systems",
-        query: "What is the core difference between Socialism and Communism? Compare state ownership, wealth distribution, and practical examples."
-      },
-      {
         icon: "💻",
-        title: "Algorithmic Architecture",
+        title: "Code Architecture",
+        desc: "High-performance LRU Cache in Python with O(1)",
         query: "Write a high-performance LRU Cache implementation in Python with complete time-complexity analysis."
       }
     ];
 
     return (
-      <div className="my-6 max-w-4xl mx-auto message-enter px-2">
-        <div className="bg-[#FFFDF6] dark:bg-[#181820] border-3 border-black dark:border-white shadow-neo-lg rounded-3xl p-5 sm:p-7">
-          {/* Header Badge & Title */}
-          <div className="flex flex-col items-center text-center mb-6">
-            <DualArenaLogo size={60} className="mb-3" />
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-popYellow text-black border-2 border-black rounded-full text-xs font-mono font-black uppercase shadow-neo-sm mb-2">
-              <span className="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
-              Side-by-Side Model Arena
-            </div>
-            <h2 className="font-display font-black text-2xl sm:text-3xl text-black dark:text-white tracking-tight">
-              WELCOME TO DUAL AI ARENA
+      <div className="arena-hero-launcher my-2 sm:my-3 max-w-3xl mx-auto px-2">
+        <div className="bg-[#FFFDF6] dark:bg-[#181820] border-3 border-black dark:border-white shadow-neo rounded-2xl p-4 sm:p-5">
+          <div className="text-center mb-3">
+            <h2 className="font-display font-black text-xl sm:text-2xl text-black dark:text-white tracking-tight flex items-center justify-center gap-2">
+              <span>⚡</span> READY FOR DUEL <span>⚡</span>
             </h2>
-            <p className="font-medium text-gray-600 dark:text-gray-300 text-xs sm:text-sm max-w-xl mt-1 leading-relaxed">
-              Every query triggers an authentic head-to-head confrontation. Compare lightning-fast flash execution against deep step-by-step analytical reasoning.
+            <p className="font-mono text-xs text-gray-600 dark:text-gray-300 mt-1">
+              Pick a quick starter duel below or ask your own question in the bar.
             </p>
           </div>
 
-          {/* Contender Showcase Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 mb-6">
-            {/* Contender 1: Qwen 3.8 */}
-            <div className="border-2 border-black dark:border-zinc-700 rounded-2xl p-4 bg-white dark:bg-[#20202A] shadow-neo-sm flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="bg-popBlue text-white text-[11px] font-mono font-black px-2.5 py-0.5 rounded-full border border-black shadow-neo-sm flex items-center gap-1">
-                    <FaBolt className="text-popYellow text-[10px]" /> FAST MODEL
-                  </span>
-                  <span className="text-[11px] font-mono font-bold text-gray-500">Qwen 3.8 27B</span>
-                </div>
-                <h4 className="font-display font-black text-base text-black dark:text-white mb-1">
-                  Speed & Structured Formatting
-                </h4>
-                <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
-                  Engineered for near-instant responses, concise clarity, markdown tables, bold highlights, and clean bullet lists.
-                </p>
-              </div>
-              <div className="mt-3 pt-2.5 border-t border-gray-100 dark:border-gray-800 flex items-center gap-2 text-[10px] font-mono font-bold text-gray-500">
-                <span>⚡ Sub-1s First Token</span>
-                <span>•</span>
-                <span>📊 Auto Markdown Tables</span>
-              </div>
-            </div>
-
-            {/* Contender 2: GPT-OSS 120B */}
-            <div className="border-2 border-black dark:border-zinc-700 rounded-2xl p-4 bg-white dark:bg-[#20202A] shadow-neo-sm flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="bg-popMint text-black text-[11px] font-mono font-black px-2.5 py-0.5 rounded-full border border-black shadow-neo-sm flex items-center gap-1">
-                    <FaBrain className="text-emerald-700 text-[10px]" /> REASONING MODEL
-                  </span>
-                  <span className="text-[11px] font-mono font-bold text-gray-500">OpenAI GPT-OSS 120B</span>
-                </div>
-                <h4 className="font-display font-black text-base text-black dark:text-white mb-1">
-                  Chain-of-Thought Reasoning
-                </h4>
-                <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
-                  Dedicated reasoning drawer breaking down internal logic, edge cases, foundational principles, and trade-offs.
-                </p>
-              </div>
-              <div className="mt-3 pt-2.5 border-t border-gray-100 dark:border-gray-800 flex items-center gap-2 text-[10px] font-mono font-bold text-gray-500">
-                <span>🔬 Visible Thought Process</span>
-                <span>•</span>
-                <span>🎯 Deep Analytical Logic</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Starter Arena Prompts */}
-          <div>
-            <div className="text-[11px] font-mono font-black text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-              <span>⚡</span> CLICK A STARTER CHALLENGE TO TEST BOTH MODELS:
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {starterPrompts.map((item, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => onSelectPrompt && onSelectPrompt(item.query)}
-                  className="text-left bg-white dark:bg-[#20202A] hover:bg-popYellow dark:hover:bg-amber-300 hover:text-black border-2 border-black dark:border-white rounded-xl p-3 text-xs font-semibold transition-all shadow-neo-sm hover:translate-x-0.5 hover:-translate-y-0.5 active:translate-x-0 active:translate-y-0 group cursor-pointer"
-                >
-                  <div className="flex items-center gap-2 font-display font-bold text-black dark:text-white group-hover:text-black mb-0.5">
-                    <span>{item.icon}</span>
-                    <span>{item.title}</span>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            {starterPrompts.map((item, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => onSelectPrompt && onSelectPrompt(item.query)}
+                className="text-left bg-white dark:bg-[#20202A] hover:bg-[#FFDE00] dark:hover:bg-[#FFDE00] hover:text-black dark:hover:text-black border-2 border-black dark:border-white rounded-xl p-3 text-xs font-semibold transition-all shadow-neo-sm hover:-translate-y-0.5 active:translate-y-0 cursor-pointer flex flex-col justify-between group"
+              >
+                <div>
+                  <div className="flex items-center gap-1.5 font-display font-bold text-black dark:text-white group-hover:text-black mb-1">
+                    <span className="text-sm">{item.icon}</span>
+                    <span className="text-xs font-black">{item.title}</span>
                   </div>
-                  <div className="text-gray-500 dark:text-gray-400 group-hover:text-gray-900 line-clamp-1 text-[11px] font-mono">
-                    "{item.query}"
+                  <div className="text-gray-500 dark:text-gray-400 group-hover:text-gray-900 text-[11px] font-mono leading-tight">
+                    {item.desc}
                   </div>
-                </button>
-              ))}
-            </div>
+                </div>
+              </button>
+            ))}
           </div>
         </div>
       </div>

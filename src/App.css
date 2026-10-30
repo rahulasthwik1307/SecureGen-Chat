@@ -156,45 +156,204 @@
   border-bottom: 3px solid #FFFFFF;
 }
 
-.heading {
-  font-family: "Fredoka", "Plus Jakarta Sans", sans-serif;
-  font-weight: 800;
-  font-size: 20px;
-  margin: 0;
+/* Brand Lockup */
+.header-brand-wrap {
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #111111;
+  flex-shrink: 0;
 }
 
-.app.dark .heading {
+.header-title {
+  font-family: "Fredoka", "Plus Jakarta Sans", sans-serif;
+  font-weight: 900;
+  font-size: 22px;
+  letter-spacing: -0.5px;
+  color: #111111;
+  line-height: 1;
+}
+
+.app.dark .header-title {
   color: #FFFFFF;
 }
 
-.header-matchup-pill {
-  display: none;
+/* Arena Scoreboard Stadium - Highlighting Qwen 3.8 and GPT-OSS 120B */
+.header-matchup-stadium {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: #FFFDF6;
+  border: 2.5px solid #111111;
+  box-shadow: 3px 3px 0px #111111;
+  border-radius: 9999px;
+  padding: 5px 18px;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  user-select: none;
 }
 
-@media (min-width: 640px) {
-  .header-matchup-pill {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background-color: #FFFDF6;
-    border: 2px solid #111111;
-    box-shadow: 2px 2px 0px #111111;
-    border-radius: 9999px;
-    padding: 4px 12px;
-    font-size: 11px;
-    font-family: monospace;
-    font-weight: 800;
+.app.dark .header-matchup-stadium {
+  background-color: #1E1E28;
+  border-color: #FFFFFF;
+  box-shadow: 3px 3px 0px #FFFFFF;
+}
+
+.stadium-contender {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stadium-name {
+  font-family: "Fredoka", "Plus Jakarta Sans", sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: -0.2px;
+  display: flex;
+  align-items: center;
+}
+
+.stadium-name.qwen {
+  color: #0055FF;
+}
+
+.app.dark .stadium-name.qwen {
+  color: #5C9DFF;
+}
+
+.stadium-name.gpt {
+  color: #00875A;
+}
+
+.app.dark .stadium-name.gpt {
+  color: #26E29C;
+}
+
+.stadium-score {
+  min-width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 900;
+  font-size: 14px;
+  border: 2px solid #111111;
+  box-shadow: 1.5px 1.5px 0px #111111;
+  color: #FFFFFF;
+}
+
+.app.dark .stadium-score {
+  border-color: #000000;
+}
+
+.stadium-score.qwen {
+  background-color: #0055FF;
+}
+
+.stadium-score.gpt {
+  background-color: #00875A;
+}
+
+.stadium-vs {
+  background-color: #FF3366;
+  color: #FFFFFF;
+  font-family: "Fredoka", sans-serif;
+  font-weight: 900;
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 2px solid #111111;
+  box-shadow: 1.5px 1.5px 0px #111111;
+  letter-spacing: 0.5px;
+  transform: rotate(-3deg);
+  user-select: none;
+}
+
+.app.dark .stadium-vs {
+  border-color: #FFFFFF;
+  box-shadow: 1.5px 1.5px 0px #FFFFFF;
+}
+
+.stadium-badge {
+  font-size: 9px;
+  font-family: monospace;
+  font-weight: 900;
+  padding: 2px 6px;
+  border-radius: 5px;
+  border: 1.5px solid #111111;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stadium-badge.fast {
+  background-color: #EBF3FF;
+  color: #0055FF;
+}
+
+.app.dark .stadium-badge.fast {
+  background-color: #1A284D;
+  color: #85B7FF;
+  border-color: #85B7FF;
+}
+
+.stadium-badge.reasoning {
+  background-color: #E6FBF5;
+  color: #00875A;
+}
+
+.app.dark .stadium-badge.reasoning {
+  background-color: #133328;
+  color: #4EE4AC;
+  border-color: #4EE4AC;
+}
+
+.stadium-round {
+  font-size: 10px;
+  font-family: monospace;
+  font-weight: 900;
+  background-color: #FFDE00;
+  color: #111111;
+  padding: 2px 7px;
+  border-radius: 5px;
+  border: 1.5px solid #111111;
+  box-shadow: 1px 1px 0px #111111;
+  margin-left: 2px;
+}
+
+/* Minimal Zero-Scroll Arena Hero Launcher */
+.arena-hero-launcher {
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@media (max-width: 900px) {
+  .stadium-badge {
+    display: none;
   }
-  
-  .app.dark .header-matchup-pill {
-    background-color: #121216;
-    border-color: #FFFFFF;
-    box-shadow: 2px 2px 0px #FFFFFF;
-    color: #FFFFFF;
+}
+
+@media (max-width: 720px) {
+  .header-matchup-stadium {
+    padding: 3px 10px;
+    gap: 6px;
+  }
+  .stadium-name {
+    font-size: 12px;
+  }
+  .stadium-score {
+    min-width: 24px;
+    height: 24px;
+    font-size: 12px;
+  }
+  .stadium-vs {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+}
+
+@media (max-width: 580px) {
+  .header-title {
+    display: none;
   }
 }
 

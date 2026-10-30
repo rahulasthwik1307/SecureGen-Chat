@@ -3,10 +3,11 @@ import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import bcrypt from "bcryptjs";
 import FaceCapture from "./FaceCapture";
+import DualArenaLogo from "./DualArenaLogo";
 import { db } from "../db/db";
 import { loadModels } from "../utils/face";
 import * as faceapi from "face-api.js";
-import { FaArrowLeft } from "react-icons/fa6";
+import { FaArrowLeft, FaCircleCheck } from "react-icons/fa6";
 import "../styles/Auth.css";
 
 const Register = () => {
@@ -19,6 +20,7 @@ const Register = () => {
   const [showFaceCapture, setShowFaceCapture] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [registrationSuccess, setRegistrationSuccess] = useState(null);
 
   // Pre-load face models silently in background
   useEffect(() => {
@@ -96,8 +98,13 @@ const Register = () => {
         faceDescriptor: Array.from(descriptor),
       });
 
-      toast.success("Account & Face Registration successful! Please sign in.");
-      navigate("/login");
+      setRegistrationSuccess({
+        username: formData.username
+      });
+      toast.success("Account & Face Registration successful! Redirecting...");
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
     } catch (err) {
       console.error(err);
       toast.error("Registration failed. Please try again.");
@@ -111,15 +118,55 @@ const Register = () => {
       <div className="auth-card" role="main">
         {/* Compact Logo Mark */}
         <div className="auth-badge-row">
-          <div className="auth-logo-badge pink">
-            🚀
-          </div>
+          <DualArenaLogo size={36} />
         </div>
 
         <h1 className="auth-title">Create Account</h1>
         <p className="auth-subtitle">Dual AI Arena Face-Protected Profile</p>
 
-        {!showFaceCapture ? (
+        {registrationSuccess ? (
+          <div className="biometric-success-screen message-enter">
+            <div className="success-badge-container">
+              <div className="w-16 h-16 bg-popYellow border-3 border-black rounded-2xl flex items-center justify-center text-3xl text-black shadow-neo mx-auto mb-3 animate-bounce-short">
+                <FaCircleCheck className="text-3xl text-black" />
+              </div>
+            </div>
+
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-black text-popYellow rounded-full text-[11px] font-mono font-black uppercase tracking-wider mb-2">
+              <span className="w-2 h-2 rounded-full bg-popYellow animate-ping"></span>
+              ENROLLMENT COMPLETE
+            </span>
+
+            <h3 className="font-display font-black text-2xl text-black mb-1">
+              FACE PROFILE REGISTERED!
+            </h3>
+            <p className="text-xs text-gray-600 font-medium max-w-xs mx-auto mb-5 leading-relaxed">
+              Biometric face key enrolled for <span className="font-bold text-black font-mono">"{registrationSuccess.username}"</span>.
+            </p>
+
+            <div className="bg-[#FFFDF6] border-2 border-black rounded-2xl p-4 shadow-neo-sm mb-5 text-left">
+              <div className="flex items-center justify-between py-1.5 border-b border-gray-200 text-xs">
+                <span className="font-mono text-gray-500 font-bold uppercase">Biometric Hash</span>
+                <span className="font-mono font-black text-emerald-600">128D Face Descriptor Stored</span>
+              </div>
+              <div className="flex items-center justify-between py-1.5 border-b border-gray-200 text-xs">
+                <span className="font-mono text-gray-500 font-bold uppercase">Protection</span>
+                <span className="font-mono font-black text-black">Active & Protected ✓</span>
+              </div>
+              <div className="flex items-center justify-between py-1.5 text-xs">
+                <span className="font-mono text-gray-500 font-bold uppercase">Next Step</span>
+                <span className="font-mono font-black text-popBlue">Face-Protected Sign In</span>
+              </div>
+            </div>
+
+            <div className="w-full bg-gray-100 border-2 border-black rounded-full h-3 overflow-hidden shadow-neo-sm mb-2">
+              <div className="bg-popMint h-full border-r-2 border-black animate-progress-fill"></div>
+            </div>
+            <span className="text-[11px] font-mono font-bold text-gray-500">
+              Redirecting to Sign In in 1s...
+            </span>
+          </div>
+        ) : !showFaceCapture ? (
           <form className="auth-form" onSubmit={handleSubmit} noValidate>
             <div className="form-group">
               <label htmlFor="username">Username</label>
@@ -187,17 +234,16 @@ const Register = () => {
           <div className="face-auth-step">
             <FaceCapture
               onCapture={handleFaceCapture}
-              buttonText={loading ? "Registering..." : "Register Face Now"}
               isRegistration={true}
             />
 
             <button
               type="button"
-              className="auth-button secondary back mt-2"
+              className="auth-button secondary back mt-3"
               onClick={() => setShowFaceCapture(false)}
               disabled={loading}
             >
-              <FaArrowLeft className="text-xs mr-1 inline" /> Back to Account Details
+              <FaArrowLeft className="text-xs mr-1.5 inline" /> Back to Account Details
             </button>
           </div>
         )}

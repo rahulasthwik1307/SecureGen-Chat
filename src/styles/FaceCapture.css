@@ -1,15 +1,15 @@
 /* ==========================================================================
    NEO-BRUTALIST BIOMETRIC FACE KIOSK STYLES
-   Zero-Scroll Viewport Layout, Corner Crosshairs, Shutter Flash, Hard Shadows
+   Zero-Scroll Viewport Layout, Corner Brackets, Shutter Flash, Hard Shadows
 ========================================================================== */
 
 .face-kiosk-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.85rem;
   width: 100%;
-  max-width: 380px;
+  max-width: 360px;
   margin: 0 auto;
 }
 
@@ -19,7 +19,7 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  margin-bottom: 2px;
+  padding: 0 2px;
 }
 
 .kiosk-mode-tag {
@@ -33,10 +33,10 @@
   border: 2px solid #111111;
   box-shadow: 2px 2px 0px #111111;
   border-radius: 8px;
-  padding: 3px 8px;
+  padding: 3px 9px;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
 }
 
 .kiosk-attempt-pill {
@@ -57,11 +57,11 @@
   color: #FFFFFF;
 }
 
-/* Biometric Viewfinder: Rounded Square with Crosshair Brackets */
+/* Biometric Viewfinder: Rounded Square with Corner Brackets */
 .biometric-viewfinder-box {
   position: relative;
-  width: 250px;
-  height: 250px;
+  width: 240px;
+  height: 240px;
   border-radius: 24px;
   border: 3.5px solid #111111;
   box-shadow: 5px 5px 0px #111111;
@@ -103,7 +103,7 @@
   will-change: transform;
 }
 
-/* Corner Crosshair Brackets (Neo-Brutalist HUD marks) */
+/* Corner Brackets (Neo-Brutalist HUD marks) */
 .crosshair-bracket {
   position: absolute;
   width: 24px;
@@ -229,7 +229,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 6px 12px;
+  padding: 8px 14px;
   border: 2.5px solid #111111;
   box-shadow: 2px 2px 0px #111111;
   border-radius: 12px;
@@ -259,6 +259,19 @@
   color: #1c7ed6;
 }
 
+.guidance-status-pill.capturing {
+  background-color: #e6fcf5;
+  border-color: #00E599;
+  color: #087f5b;
+  box-shadow: 3px 3px 0px #00E599;
+  animation: captureGlow 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes captureGlow {
+  0% { transform: scale(0.99); }
+  100% { transform: scale(1.01); }
+}
+
 .guidance-text {
   line-height: 1.2;
 }
@@ -271,56 +284,18 @@
   border: 2px solid #e03131;
   box-shadow: 2px 2px 0px #111111;
   border-radius: 10px;
-  padding: 6px 10px;
+  padding: 8px 12px;
   font-size: 11px;
   font-weight: 700;
   display: flex;
   align-items: center;
-  gap: 6px;
-  text-align: left;
-}
-
-/* Action Snap Button */
-.kiosk-action-btn {
-  width: 100%;
-  background-color: var(--pop-yellow);
-  color: #111111;
-  border: 3px solid #111111;
-  box-shadow: 4px 4px 0px #111111;
-  border-radius: 14px;
-  padding: 10px 16px;
-  font-family: "Fredoka", sans-serif;
-  font-size: 14px;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   gap: 8px;
-  cursor: pointer;
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
-  user-select: none;
-}
-
-.kiosk-action-btn:hover:not(:disabled) {
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0px #111111;
-  background-color: #ffe677;
-}
-
-.kiosk-action-btn:active:not(:disabled) {
-  transform: translate(2px, 2px);
-  box-shadow: 2px 2px 0px #111111;
-}
-
-.kiosk-action-btn:disabled {
-  opacity: 0.65;
-  cursor: not-allowed;
-  transform: none !important;
+  text-align: left;
 }
 
 @media (max-width: 480px) {
   .biometric-viewfinder-box {
-    width: 220px;
-    height: 220px;
+    width: 210px;
+    height: 210px;
   }
 }

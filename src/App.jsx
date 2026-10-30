@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { animate, stagger } from "animejs";
 import "./App.css";
 import ChatMessage from "./components/ChatMessage";
@@ -85,7 +85,8 @@ function App() {
   const [loadingId, setLoadingId] = useState(null);
   const [copiedShare, setCopiedShare] = useState(false);
   const [showScrollBottom, setShowScrollBottom] = useState(false);
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [chatHistory, setChatHistory, clearChat, chatLoading] = useUserChat(
     user?.username,
     []
@@ -159,7 +160,7 @@ function App() {
   // Stagger in starter chips on initial mount with Anime.js
   useEffect(() => {
     if (currentChat.length <= 1) {
-      animate('.starter-chip', {
+      animate('.arena-hero-launcher button', {
         translateY: [16, 0],
         opacity: [0, 1],
         delay: stagger(50),
@@ -502,54 +503,42 @@ function App() {
       {/* Main Chat Workspace */}
       <main className="main-content">
         <header className="header">
-          {/* Brand & Championship Emblem */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            <h1 className="heading">
-              <DualArenaLogo size={38} className="shrink-0" />
-              <div className="flex flex-col">
-                <div className="flex items-center gap-1.5">
-                  <span className="tracking-tight font-black font-display text-lg sm:text-xl leading-none">
-                    DUAL<span className="text-popPink">.ARENA</span>
-                  </span>
-                  <span className="hidden md:inline-flex items-center gap-1 text-[9px] font-mono font-black uppercase tracking-wider bg-popMint text-black px-1.5 py-0.5 rounded-md border border-black shadow-neo-sm">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
-                    LIVE DUEL
-                  </span>
-                </div>
-                <span className="text-[10px] font-mono font-bold text-gray-500 hidden sm:block">
-                  Side-by-Side Model Arena
-                </span>
-              </div>
-            </h1>
+          {/* Brand - Preserving DualArenaLogo as requested, with clean bold title */}
+          <div className="header-brand-wrap">
+            <DualArenaLogo size={42} className="shrink-0" />
+            <span className="header-title">DUAL ARENA</span>
+          </div>
 
-            {/* Stadium Matchup & Live Scoreboard Pill with Anime.js Spring Ref */}
-            <div ref={scoreboardRef} className="header-matchup-pill">
-              <div className="flex items-center gap-1.5">
-                <span className="text-popBlue font-extrabold flex items-center gap-1">
-                  <FaBolt className="text-popYellow text-[11px]" /> Qwen 3.8
-                </span>
-                <span className="bg-popBlue text-white text-[10px] px-1.5 py-0.2 rounded-full font-mono font-black border border-black shadow-neo-sm">
-                  {qwenWins}
-                </span>
-              </div>
-
-              <span className="text-popPink font-black px-1 text-xs">VS</span>
-
-              <div className="flex items-center gap-1.5">
-                <span className="bg-emerald-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-mono font-black border border-black shadow-neo-sm">
-                  {gptWins}
-                </span>
-                <span className="text-emerald-700 font-extrabold flex items-center gap-1">
-                  <FaBrain className="text-emerald-600 text-[11px]" /> GPT-OSS 120B
-                </span>
-              </div>
-
-              {duelRounds > 0 && (
-                <span className="ml-1 text-[9px] font-mono font-black uppercase bg-amber-100 text-amber-900 px-1.5 py-0.5 rounded border border-amber-400">
-                  R{duelRounds}
-                </span>
-              )}
+          {/* Prominent Arena Scoreboard Stadium - Highlighting Qwen 3.8 and GPT-OSS 120B */}
+          <div ref={scoreboardRef} className="header-matchup-stadium" title="Live Duel Arena Scoreboard">
+            {/* Contender 1: Qwen 3.8 (Fast) */}
+            <div className="stadium-contender qwen-side">
+              <span className="stadium-badge fast">FAST</span>
+              <span className="stadium-name qwen">
+                <FaBolt className="text-amber-500 text-xs inline mr-1" />
+                Qwen 3.8
+              </span>
+              <span className="stadium-score qwen">{qwenWins}</span>
             </div>
+
+            {/* Stadium Clash Badge */}
+            <div className="stadium-vs">
+              <span>VS</span>
+            </div>
+
+            {/* Contender 2: GPT-OSS 120B (Reasoning) */}
+            <div className="stadium-contender gpt-side">
+              <span className="stadium-score gpt">{gptWins}</span>
+              <span className="stadium-name gpt">
+                <FaBrain className="text-emerald-600 text-xs inline mr-1" />
+                GPT-OSS 120B
+              </span>
+              <span className="stadium-badge reasoning">REASONING</span>
+            </div>
+
+            {duelRounds > 0 && (
+              <span className="stadium-round">R{duelRounds}</span>
+            )}
           </div>
 
           {/* Action Row */}
@@ -665,25 +654,7 @@ function App() {
               </button>
             )}
 
-            {/* Prompt Starter Chips for instant interaction */}
-            {currentChat.length <= 1 && (
-              <div className="starter-chips-container">
-                <div className="w-full text-center text-xs font-mono font-bold text-gray-500 mb-1">
-                  ⚡ TAP TO TRY A PRESET QUESTION:
-                </div>
-                {STARTER_PROMPTS.map((item, idx) => (
-                  <button
-                    key={idx}
-                    onClick={(e) => handleChipClick(e, item.text)}
-                    className="starter-chip"
-                  >
-                    <span className="mr-1.5">{item.icon}</span>
-                    <span>{item.text}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+            </div>
         </div>
 
         {/* Sticky Input Bar at Bottom */}
@@ -751,7 +722,12 @@ function App() {
                 type="button"
                 onClick={() => {
                   setShowLogoutModal(false);
-                  logout();
+                  if (logout) {
+                    logout();
+                  } else {
+                    localStorage.removeItem("authUser");
+                  }
+                  navigate("/login");
                 }}
                 className="flex-1 py-2.5 px-4 rounded-xl border-2 border-black font-extrabold text-xs bg-rose-500 hover:bg-rose-600 text-white shadow-neo-sm transition-all cursor-pointer"
               >

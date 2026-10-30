@@ -280,3 +280,53 @@
 .auth-home-link:hover {
   color: #111111;
 }
+
+/* ==========================================================================
+   BIOMETRIC SUCCESS CONFIRMATION SCREEN
+========================================================================== */
+
+.biometric-success-screen {
+  text-align: center;
+  padding: 0.5rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.success-badge-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+@keyframes progressFill {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+.animate-progress-fill {
+  animation: progressFill 1.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes bounceShort {
+  0% {
+    transform: scale(0.7) rotate(-4deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.12) rotate(3deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(-2deg);
+    opacity: 1;
+  }
+}
+
+.animate-bounce-short {
+  animation: bounceShort 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}

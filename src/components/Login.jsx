@@ -3,10 +3,11 @@ import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import bcrypt from "bcryptjs";
 import FaceCapture from "./FaceCapture";
+import DualArenaLogo from "./DualArenaLogo";
 import { db } from "../db/db";
 import { useAuth } from "../contexts/AuthContext";
 import { compareFaces, loadModels } from "../utils/face";
-import { FaShieldHalved, FaKey, FaArrowRotateRight, FaArrowLeft } from "react-icons/fa6";
+import { FaShieldHalved, FaKey, FaArrowRotateRight, FaArrowLeft, FaCircleCheck } from "react-icons/fa6";
 import "../styles/Auth.css";
 
 const Login = () => {
@@ -17,6 +18,7 @@ const Login = () => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [verificationSuccess, setVerificationSuccess] = useState(null);
 
   // 2-Attempt tracking for face verification
   const [attempt, setAttempt] = useState(1);
@@ -83,9 +85,16 @@ const Login = () => {
       const result = compareFaces(stored, descriptor);
 
       if (result.isMatch) {
-        login(currentUser);
+        setVerificationSuccess({
+          similarity: result.similarity || 99,
+          distance: result.distance,
+          username: currentUser.username
+        });
         toast.success(`Face verified! Welcome back, ${currentUser.username}`);
-        navigate("/chat");
+        setTimeout(() => {
+          login(currentUser);
+          navigate("/chat");
+        }, 1500);
       } else {
         if (attempt < 2) {
           setAttempt(2);
@@ -118,15 +127,55 @@ const Login = () => {
       <div className="auth-card" role="main">
         {/* Compact Logo Mark */}
         <div className="auth-badge-row">
-          <div className="auth-logo-badge">
-            ⚡
-          </div>
+          <DualArenaLogo size={36} />
         </div>
 
         <h1 className="auth-title">Welcome Back</h1>
         <p className="auth-subtitle">Dual AI Arena Secure Sign-In</p>
 
-        {!showFaceCapture ? (
+        {verificationSuccess ? (
+          <div className="biometric-success-screen message-enter">
+            <div className="success-badge-container">
+              <div className="w-16 h-16 bg-[#00E599] border-3 border-black rounded-2xl flex items-center justify-center text-3xl text-black shadow-neo mx-auto mb-3 animate-bounce-short">
+                <FaCircleCheck className="text-3xl text-black" />
+              </div>
+            </div>
+
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-black text-[#00E599] rounded-full text-[11px] font-mono font-black uppercase tracking-wider mb-2">
+              <span className="w-2 h-2 rounded-full bg-[#00E599] animate-ping"></span>
+              ACCESS GRANTED
+            </span>
+
+            <h3 className="font-display font-black text-2xl text-black mb-1">
+              BIOMETRICS VERIFIED!
+            </h3>
+            <p className="text-xs text-gray-600 font-medium max-w-xs mx-auto mb-5 leading-relaxed">
+              Identity confirmed for <span className="font-bold text-black font-mono">"{verificationSuccess.username}"</span>.
+            </p>
+
+            <div className="bg-[#FFFDF6] border-2 border-black rounded-2xl p-4 shadow-neo-sm mb-5 text-left">
+              <div className="flex items-center justify-between py-1.5 border-b border-gray-200 text-xs">
+                <span className="font-mono text-gray-500 font-bold uppercase">Match Accuracy</span>
+                <span className="font-mono font-black text-emerald-600">{verificationSuccess.similarity}% Confirmed</span>
+              </div>
+              <div className="flex items-center justify-between py-1.5 border-b border-gray-200 text-xs">
+                <span className="font-mono text-gray-500 font-bold uppercase">Security Guard</span>
+                <span className="font-mono font-black text-black">Dual-Layer Biometric ID ✓</span>
+              </div>
+              <div className="flex items-center justify-between py-1.5 text-xs">
+                <span className="font-mono text-gray-500 font-bold uppercase">Destination</span>
+                <span className="font-mono font-black text-popBlue">Dual AI Arena Workspace</span>
+              </div>
+            </div>
+
+            <div className="w-full bg-gray-100 border-2 border-black rounded-full h-3 overflow-hidden shadow-neo-sm mb-2">
+              <div className="bg-popYellow h-full border-r-2 border-black animate-progress-fill"></div>
+            </div>
+            <span className="text-[11px] font-mono font-bold text-gray-500">
+              Entering Arena in 1s...
+            </span>
+          </div>
+        ) : !showFaceCapture ? (
           <form className="auth-form" onSubmit={handleSubmit} noValidate>
             <div className="form-group">
               <label htmlFor="username">Username</label>
@@ -219,7 +268,6 @@ const Login = () => {
           <div className="face-auth-step">
             <FaceCapture
               onCapture={verifyFace}
-              buttonText={loading ? "Verifying..." : "Verify Face Now"}
               currentAttempt={attempt}
               maxAttempts={2}
               isRegistration={false}
@@ -227,11 +275,11 @@ const Login = () => {
 
             <button
               type="button"
-              className="auth-button secondary back mt-2"
+              className="auth-button secondary back mt-3"
               onClick={() => setShowFaceCapture(false)}
               disabled={loading}
             >
-              <FaArrowLeft className="text-xs mr-1 inline" /> Back to Credentials
+              <FaArrowLeft className="text-xs mr-1.5 inline" /> Back to Credentials
             </button>
           </div>
         )}

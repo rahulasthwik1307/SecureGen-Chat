@@ -5,6 +5,7 @@ import { useAuth } from "../contexts/AuthContext";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import { animate } from "animejs";
 import { 
   FaRobot, 
   FaBolt, 
@@ -18,7 +19,8 @@ import {
   FaChevronDown,
   FaCircleCheck,
   FaPlay,
-  FaStar
+  FaStar,
+  FaPlus
 } from "react-icons/fa6";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -53,7 +55,7 @@ const SIMULATED_PROMPTS = [
 const FAQS = [
   {
     question: "How does the Dual AI system work?",
-    answer: "When you send a prompt, our engine simultaneously queries two top-tier AI models: Meta LLaMA 4 and DeepSeek R1. You get both answers side-by-side in real-time, allowing you to compare creative storytelling against deep chain-of-thought logic."
+    answer: "When you send a prompt, our engine simultaneously queries two top-tier AI models: Qwen 3.8 27B and OpenAI GPT-OSS 120B. You get both answers side-by-side in real-time, allowing you to compare creative storytelling against deep chain-of-thought logic."
   },
   {
     question: "Why is this valuable for children and students?",
@@ -79,66 +81,101 @@ export default function Welcome() {
   const [copiedDemo, setCopiedDemo] = useState(false);
   const [openFaq, setOpenFaq] = useState(0);
 
-  // GSAP Animations
+  // GSAP Orchestrated & Hardware-Accelerated Animations
   useGSAP(() => {
-    // 1. Continuous Marquee
-    if (marqueeRef.current) {
-      gsap.to(".marquee-track", {
-        xPercent: -50,
-        ease: "none",
-        duration: 24,
-        repeat: -1
+    const isReducedMotion = typeof window !== 'undefined' && 
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    // 1. Hero Headline Staggered Pop Entrance (Missed Opportunity 2)
+    if (!isReducedMotion) {
+      gsap.from(".hero-headline-1", {
+        y: 28,
+        opacity: 0,
+        duration: 0.6,
+        ease: "back.out(1.4)"
+      });
+      gsap.from(".hero-headline-2", {
+        scale: 0.92,
+        rotation: -2.5,
+        opacity: 0,
+        duration: 0.65,
+        delay: 0.12,
+        ease: "back.out(1.5)"
       });
     }
 
-    // 2. Pinned Comparison Arena with ScrollTrigger
+    // 2. Marquee with Reduced Motion check and hover pause (Fixes #3)
+    if (!isReducedMotion && marqueeRef.current) {
+      const marqueeTween = gsap.to(".marquee-track", {
+        xPercent: -50,
+        ease: "none",
+        duration: 22,
+        repeat: -1
+      });
+
+      const trackEl = marqueeRef.current;
+      const pauseMarquee = () => marqueeTween.pause();
+      const resumeMarquee = () => marqueeTween.play();
+
+      trackEl.addEventListener("mouseenter", pauseMarquee);
+      trackEl.addEventListener("mouseleave", resumeMarquee);
+    }
+
+    // 3. Pinned Comparison Arena with Direct Scrub Timeline (Fixes #2, #5 & Missed Opp 1)
     const mm = gsap.matchMedia();
     
     mm.add("(min-width: 1024px)", () => {
-      ScrollTrigger.create({
-        trigger: pinnedRef.current,
-        start: "top 12%",
-        end: "+=600",
-        pin: true,
-        scrub: 1,
-        anticipatePin: 1,
-        onUpdate: (self) => {
-          const progress = self.progress;
-          gsap.to(".pinned-llama-card", {
-            x: -16 * (1 - progress),
-            scale: 1 + 0.02 * progress,
-            duration: 0.1,
-            overwrite: "auto"
-          });
-          gsap.to(".pinned-deepseek-card", {
-            x: 16 * (1 - progress),
-            scale: 1 + 0.02 * progress,
-            duration: 0.1,
-            overwrite: "auto"
-          });
-          gsap.to(".pinned-vs-badge", {
-            rotation: progress * 360,
-            duration: 0.1,
-            overwrite: "auto"
-          });
-        }
-      });
+      if (!isReducedMotion && pinnedRef.current) {
+        const scrubTl = gsap.timeline({
+          scrollTrigger: {
+            trigger: pinnedRef.current,
+            start: "top 12%",
+            end: "+=600",
+            pin: true,
+            scrub: 0.6,
+            anticipatePin: 1
+          }
+        });
+
+        // Cards converge with subtle elastic compression
+        scrubTl.fromTo(".pinned-llama-card", 
+          { x: -30, scale: 0.97 }, 
+          { x: 0, scale: 1.02, ease: "none" }, 0
+        );
+        scrubTl.fromTo(".pinned-deepseek-card", 
+          { x: 30, scale: 0.97 }, 
+          { x: 0, scale: 1.02, ease: "none" }, 0
+        );
+        // Center VS badge impact clash instead of 360 spin
+        scrubTl.fromTo(".pinned-vs-badge", 
+          { scale: 0.85, rotation: -10 }, 
+          { scale: 1.15, rotation: 6, ease: "none" }, 0
+        );
+
+        // Stat meters fill ignition
+        scrubTl.fromTo(".stat-meter-fill", 
+          { scaleX: 0, transformOrigin: "left" }, 
+          { scaleX: 1, duration: 0.45, stagger: 0.05, ease: "power2.out" }, 0.15
+        );
+      }
     });
 
-    // 3. Staggered reveal for cards
-    gsap.utils.toArray(".feature-pop-card").forEach((card) => {
-      gsap.from(card, {
+    // 4. Staggered feature cards reveal (Fixes #6)
+    if (!isReducedMotion) {
+      gsap.from(".feature-pop-card", {
         scrollTrigger: {
-          trigger: card,
-          start: "top 85%",
+          trigger: "#superpowers",
+          start: "top 80%",
           toggleActions: "play none none reverse"
         },
-        y: 30,
+        y: 26,
+        scale: 0.96,
         opacity: 0,
-        duration: 0.6,
-        ease: "back.out(1.2)"
+        duration: 0.5,
+        stagger: 0.08,
+        ease: "back.out(1.3)"
       });
-    });
+    }
 
     return () => {
       ScrollTrigger.getAll().forEach((t) => t.kill());
@@ -147,8 +184,15 @@ export default function Welcome() {
 
   const activeDemo = SIMULATED_PROMPTS[activePromptIdx];
 
-  const handleCopyDemo = () => {
-    const text = `Question: ${activeDemo.shortQuery}\n\nLLaMA 4: ${activeDemo.llamaAnswer}\n\nDeepSeek R1: ${activeDemo.deepseekAnswer}`;
+    const handleCopyDemo = (e) => {
+    if (e?.currentTarget) {
+      animate(e.currentTarget, {
+        scale: [1, 0.88, 1.08, 1],
+        duration: 250,
+        ease: "outBack"
+      });
+    }
+    const text = `Question: ${activeDemo.shortQuery}\n\nQwen 3.8 27B: ${activeDemo.llamaAnswer}\n\nOpenAI GPT-OSS 120B: ${activeDemo.deepseekAnswer}`;
     navigator.clipboard.writeText(text);
     setCopiedDemo(true);
     setTimeout(() => setCopiedDemo(false), 2000);
@@ -161,41 +205,58 @@ export default function Welcome() {
       ========================================================================= */}
       <header className="sticky top-0 z-50 px-4 py-4">
         <div className="max-w-7xl mx-auto bg-white border-3 border-black shadow-neo rounded-2xl px-6 py-3 flex items-center justify-between">
-          {/* Logo Badge */}
-          <Link to="/" className="flex items-center gap-3 group focus:outline-none focus-visible:ring-4 focus-visible:ring-popYellow rounded-lg">
-            <DualArenaLogo size={42} className="shrink-0" />
-            <div className="flex flex-col">
-              <span className="font-display font-black text-2xl tracking-tight leading-none text-black flex items-center gap-2">
-                DUAL<span className="text-popPink">.AI</span>
-                <span className="text-xs bg-popMint border-2 border-black px-2 py-0.5 rounded-full font-bold">V2.0</span>
-              </span>
-              <span className="text-xs font-bold text-gray-700 tracking-wider hidden sm:inline">The 2-in-1 Brain Arena</span>
-            </div>
+          {/* Logo Badge - Unified Brand Lockup */}
+          <Link to="/" className="header-brand-wrap group focus:outline-none focus-visible:ring-4 focus-visible:ring-popYellow rounded-lg">
+            <DualArenaLogo size={40} className="shrink-0" />
+            <span className="header-title text-xl sm:text-2xl font-black text-black">
+              DUAL ARENA
+            </span>
           </Link>
 
           {/* Navigation Links */}
-          <nav className="hidden md:flex items-center gap-8 font-bold text-sm">
+          <nav className="hidden md:flex items-center gap-7 font-bold text-sm">
             <a href="#playground" className="text-black hover:text-popBlue transition-colors">Live Demo</a>
             <a href="#arena" className="text-black hover:text-popBlue transition-colors">The Duel</a>
             <a href="#superpowers" className="text-black hover:text-popBlue transition-colors">Superpowers</a>
             <a href="#faq" className="text-black hover:text-popBlue transition-colors">FAQ</a>
           </nav>
 
-          {/* Auth Actions */}
-          <div className="flex items-center gap-3">
-            <Link
-              to="/login"
-              className="neo-btn bg-white hover:bg-gray-50 text-black px-4 py-2.5 rounded-xl text-sm font-bold"
-            >
-              Sign In
-            </Link>
-            <Link
-              to="/register"
-              className="neo-btn bg-popYellow hover:bg-yellow-300 text-black px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2"
-            >
-              <span>Join Free</span>
-              <FaArrowRight className="text-xs" />
-            </Link>
+          {/* Clean & Attractive Action Cluster in Right-Side Corner */}
+          <div className="header-actions">
+            {user ? (
+              <>
+                <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-[#FFFDF6] border-2 border-black rounded-xl text-xs font-mono font-black shadow-neo-sm">
+                  <span>👤</span>
+                  <span className="max-w-[110px] truncate text-black">{user.username}</span>
+                </div>
+                <Link
+                  to="/chat"
+                  className="header-quick-btn"
+                  title="Launch the Dual AI Arena"
+                >
+                  <FaBolt className="text-xs text-amber-500" />
+                  <span>Launch Arena</span>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="header-action-btn font-extrabold text-xs sm:text-sm !w-auto px-4 text-black hover:bg-gray-100"
+                  title="Sign In to Dual AI Arena"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  to="/register"
+                  className="header-quick-btn"
+                  title="Create Free Arena Account"
+                >
+                  <FaPlus className="text-xs" />
+                  <span>Enter Arena</span>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
@@ -215,7 +276,7 @@ export default function Welcome() {
 
           {/* Subtitle / Statement */}
           <p className="max-w-[55ch] mx-auto text-base sm:text-xl font-medium text-gray-800 leading-relaxed mb-8 px-2">
-            Why settle for one bot? Watch Meta LLaMA 4 and DeepSeek R1 think, reason, and answer side-by-side in real-time. Built for curious learners and creators.
+            Why settle for one bot? Watch Qwen 3.8 and OpenAI GPT-OSS 120B think, reason, and answer side-by-side in real-time. Built for curious learners and creators.
           </p>
 
           {/* Primary Action Buttons */}
@@ -278,7 +339,7 @@ export default function Welcome() {
                 </p>
               </div>
               <button
-                onClick={handleCopyDemo}
+                onClick={(e) => handleCopyDemo(e)}
                 className="neo-btn bg-white text-xs sm:text-sm px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-black flex-shrink-0"
                 title="Copy entire comparison"
               >
@@ -288,19 +349,19 @@ export default function Welcome() {
             </div>
 
             {/* Side-by-Side Dual Response Showcase */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {/* Left Column: LLaMA 4 */}
+            <div key={activePromptIdx} className="grid grid-cols-1 md:grid-cols-2 gap-5 transition-opacity duration-200 animate-fadeIn">
+              {/* Left Column: Qwen 3.8 27B */}
               <div className="border-3 border-black rounded-2xl p-5 bg-blue-50/60 flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-3 border-b-2 border-black/10 pb-2.5">
                     <div className="flex items-center gap-2">
                       <span className="w-7 h-7 rounded-lg bg-popBlue text-white flex items-center justify-center text-xs font-bold shadow-neo-sm">
-                        L4
+                        Q3
                       </span>
-                      <span className="font-display font-bold text-base text-popBlue">Meta LLaMA 4</span>
+                      <span className="font-display font-bold text-base text-popBlue">Qwen 3.8 27B</span>
                     </div>
-                    <span className="text-xs font-bold bg-blue-100 border border-blue-400 text-blue-950 px-2 py-0.5 rounded-full">
-                      Speed: 420 t/s
+                    <span className="text-xs font-bold bg-blue-100 border border-blue-400 text-blue-950 px-2 py-0.5 rounded-full flex items-center gap-1">
+                      <FaBolt className="text-[10px] text-amber-500" /> Fast Execution
                     </span>
                   </div>
                   <p className="text-sm sm:text-base text-gray-900 leading-relaxed font-medium whitespace-pre-line">
@@ -308,23 +369,23 @@ export default function Welcome() {
                   </p>
                 </div>
                 <div className="mt-4 pt-3 border-t-2 border-black/10 flex items-center justify-between text-xs sm:text-sm font-bold text-popBlue">
-                  <span>Creative & Engaging</span>
-                  <span>Rating: 9.8 / 10</span>
+                  <span>Structured & Concise</span>
+                  <span>Speed: Sub-1s</span>
                 </div>
               </div>
 
-              {/* Right Column: DeepSeek R1 */}
+              {/* Right Column: OpenAI GPT-OSS 120B */}
               <div className="border-3 border-black rounded-2xl p-5 bg-emerald-50/60 flex flex-col justify-between">
                 <div>
                   <div className="flex items-center justify-between mb-3 border-b-2 border-black/10 pb-2.5">
                     <div className="flex items-center gap-2">
                       <span className="w-7 h-7 rounded-lg bg-popMint text-black border-2 border-black flex items-center justify-center text-xs font-bold shadow-neo-sm">
-                        R1
+                        OS
                       </span>
-                      <span className="font-display font-bold text-base text-emerald-900">DeepSeek R1</span>
+                      <span className="font-display font-bold text-base text-emerald-900">GPT-OSS 120B</span>
                     </div>
-                    <span className="text-xs font-bold bg-emerald-100 border border-emerald-500 text-emerald-950 px-2 py-0.5 rounded-full">
-                      Reasoning Lab
+                    <span className="text-xs font-bold bg-emerald-100 border border-emerald-500 text-emerald-950 px-2 py-0.5 rounded-full flex items-center gap-1">
+                      <FaBrain className="text-[10px] text-emerald-600" /> Reasoning Lab
                     </span>
                   </div>
 
@@ -341,8 +402,8 @@ export default function Welcome() {
                   </p>
                 </div>
                 <div className="mt-4 pt-3 border-t-2 border-black/10 flex items-center justify-between text-xs sm:text-sm font-bold text-emerald-900">
-                  <span>Step-by-Step Proof</span>
-                  <span>Rating: 9.9 / 10</span>
+                  <span>Chain-of-Thought Proof</span>
+                  <span>120B Parameters</span>
                 </div>
               </div>
             </div>
@@ -377,46 +438,48 @@ export default function Welcome() {
 
           {/* Pinned Arena Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-11 gap-6 items-center">
-            {/* Fighter 1: LLaMA 4 */}
+            {/* Fighter 1: Qwen 3.8 27B */}
             <div className="pinned-llama-card lg:col-span-5 bg-white border-3 border-black shadow-neo-xl rounded-3xl p-6 sm:p-8">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-base font-bold text-gray-900">Meta AI Platform</span>
-                <span className="text-sm font-bold text-popBlue">High-Speed Engine</span>
+                <span className="text-base font-bold text-gray-900">Alibaba Cloud / Groq LPU</span>
+                <span className="text-sm font-bold text-popBlue flex items-center gap-1">
+                  <FaBolt className="text-amber-500 text-xs" /> High-Speed Engine
+                </span>
               </div>
               <h3 className="font-display font-black text-3xl text-popBlue mb-2">
-                LLaMA 4 Maverick
+                Qwen 3.8 27B
               </h3>
               <p className="text-gray-800 font-medium text-sm sm:text-base mb-6 leading-relaxed">
-                Trained on massive web text and tuned for dynamic human warmth. LLaMA excels at natural storytelling, snappy dialogue, humor, and fluid summaries.
+                Engineered for ultra-fast first-token velocity, concise structured clarity, formatted markdown tables, bold key takeaways, and clean bullet lists.
               </p>
 
               {/* Stat Meters */}
               <div className="space-y-3 text-xs sm:text-sm font-bold">
                 <div>
                   <div className="flex justify-between mb-1">
-                    <span>Conversational Warmth</span>
+                    <span>Speed & Latency</span>
                     <span>99%</span>
                   </div>
                   <div className="w-full bg-gray-200 border-2 border-black rounded-full h-4 overflow-hidden">
-                    <div className="bg-popBlue h-full border-r-2 border-black" style={{ width: "99%" }}></div>
+                    <div className="bg-popBlue h-full border-r-2 border-black stat-meter-fill origin-left" style={{ width: "99%" }}></div>
                   </div>
                 </div>
                 <div>
                   <div className="flex justify-between mb-1">
-                    <span>Creative Storytelling</span>
-                    <span>96%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 border-2 border-black rounded-full h-4 overflow-hidden">
-                    <div className="bg-popYellow h-full border-r-2 border-black" style={{ width: "96%" }}></div>
-                  </div>
-                </div>
-                <div>
-                  <div className="flex justify-between mb-1">
-                    <span>Generation Speed</span>
+                    <span>Structured Markdown Tables</span>
                     <span>98%</span>
                   </div>
                   <div className="w-full bg-gray-200 border-2 border-black rounded-full h-4 overflow-hidden">
-                    <div className="bg-popMint h-full border-r-2 border-black" style={{ width: "98%" }}></div>
+                    <div className="bg-popYellow h-full border-r-2 border-black stat-meter-fill origin-left" style={{ width: "98%" }}></div>
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between mb-1">
+                    <span>Generation Throughput</span>
+                    <span>98%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 border-2 border-black rounded-full h-4 overflow-hidden">
+                    <div className="bg-popMint h-full border-r-2 border-black stat-meter-fill origin-left" style={{ width: "98%" }}></div>
                   </div>
                 </div>
               </div>
@@ -429,37 +492,39 @@ export default function Welcome() {
               </div>
             </div>
 
-            {/* Fighter 2: DeepSeek R1 */}
+            {/* Fighter 2: OpenAI GPT-OSS 120B */}
             <div className="pinned-deepseek-card lg:col-span-5 bg-white border-3 border-black shadow-neo-xl rounded-3xl p-6 sm:p-8">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-base font-bold text-gray-900">Distilled 70B System</span>
-                <span className="text-sm font-bold text-emerald-800">Reasoning Engine</span>
+                <span className="text-base font-bold text-gray-900">OpenAI Open Weights / Groq LPU</span>
+                <span className="text-sm font-bold text-emerald-800 flex items-center gap-1">
+                  <FaBrain className="text-emerald-600 text-xs" /> Reasoning Engine
+                </span>
               </div>
               <h3 className="font-display font-black text-3xl text-emerald-800 mb-2">
-                DeepSeek R1 Distill
+                OpenAI GPT-OSS 120B
               </h3>
               <p className="text-gray-800 font-medium text-sm sm:text-base mb-6 leading-relaxed">
-                A mathematical titan trained with reinforcement learning to formulate explicit chain-of-thought traces. Inspect every deduction step before the final response.
+                A massive 120B parameter reasoning model with dedicated chain-of-thought analysis, breaking down internal logic, edge cases, and multi-step deduction.
               </p>
 
               {/* Stat Meters */}
               <div className="space-y-3 text-xs sm:text-sm font-bold">
                 <div>
                   <div className="flex justify-between mb-1">
-                    <span>Reasoning Depth</span>
+                    <span>Chain-of-Thought Depth</span>
                     <span>100%</span>
                   </div>
                   <div className="w-full bg-gray-200 border-2 border-black rounded-full h-4 overflow-hidden">
-                    <div className="bg-popMint h-full border-r-2 border-black" style={{ width: "100%" }}></div>
+                    <div className="bg-popMint h-full border-r-2 border-black stat-meter-fill origin-left" style={{ width: "100%" }}></div>
                   </div>
                 </div>
                 <div>
                   <div className="flex justify-between mb-1">
                     <span>Code & Math Precision</span>
-                    <span>98%</span>
+                    <span>99%</span>
                   </div>
                   <div className="w-full bg-gray-200 border-2 border-black rounded-full h-4 overflow-hidden">
-                    <div className="bg-popPink h-full border-r-2 border-black" style={{ width: "98%" }}></div>
+                    <div className="bg-popPink h-full border-r-2 border-black stat-meter-fill origin-left" style={{ width: "99%" }}></div>
                   </div>
                 </div>
                 <div>
@@ -468,7 +533,7 @@ export default function Welcome() {
                     <span>100%</span>
                   </div>
                   <div className="w-full bg-gray-200 border-2 border-black rounded-full h-4 overflow-hidden">
-                    <div className="bg-popYellow h-full border-r-2 border-black" style={{ width: "100%" }}></div>
+                    <div className="bg-popYellow h-full border-r-2 border-black stat-meter-fill origin-left" style={{ width: "100%" }}></div>
                   </div>
                 </div>
               </div>
@@ -540,7 +605,7 @@ export default function Welcome() {
                   Peek Inside The AI Brain
                 </h3>
                 <p className="text-gray-800 font-medium leading-relaxed text-sm sm:text-base">
-                  Expandable reasoning accordions show exactly how DeepSeek breaks down tough math equations, coding bugs, or science puzzles before offering its final answer.
+                  Expandable reasoning accordions show exactly how GPT-OSS 120B breaks down tough math equations, coding bugs, or science puzzles before offering its final answer.
                 </p>
               </div>
               <div className="mt-6 pt-4 border-t-2 border-black/10 flex items-center gap-2 text-sm font-bold text-emerald-900">
@@ -576,7 +641,7 @@ export default function Welcome() {
         <div className="marquee-track inline-block">
           <span className="mx-6">DUAL AI PARALLEL STREAM</span>
           <span className="mx-6">•</span>
-          <span className="mx-6">META LLAMA 4 AND DEEPSEEK R1</span>
+          <span className="mx-6">QWEN 3.8 27B AND OPENAI GPT-OSS 120B</span>
           <span className="mx-6">•</span>
           <span className="mx-6">POWERED BY GROQ LPUS</span>
           <span className="mx-6">•</span>
@@ -588,7 +653,7 @@ export default function Welcome() {
           <span className="mx-6">•</span>
           <span className="mx-6">DUAL AI PARALLEL STREAM</span>
           <span className="mx-6">•</span>
-          <span className="mx-6">META LLAMA 4 AND DEEPSEEK R1</span>
+          <span className="mx-6">QWEN 3.8 27B AND OPENAI GPT-OSS 120B</span>
         </div>
       </div>
 
@@ -607,23 +672,28 @@ export default function Welcome() {
             {FAQS.map((faq, idx) => (
               <div
                 key={idx}
-                className="bg-white border-3 border-black shadow-neo rounded-2xl overflow-hidden"
+                className="bg-white border-3 border-black shadow-neo rounded-2xl overflow-hidden transition-all duration-200"
               >
                 <button
+                  type="button"
                   onClick={() => setOpenFaq(openFaq === idx ? -1 : idx)}
-                  className="w-full text-left p-5 sm:p-6 font-display font-bold text-lg sm:text-xl text-black flex items-center justify-between gap-4 hover:bg-gray-50 transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-popYellow"
+                  className="w-full text-left p-5 sm:p-6 font-display font-bold text-lg sm:text-xl text-black flex items-center justify-between gap-4 hover:bg-amber-50/50 transition-colors focus:outline-none focus-visible:ring-4 focus-visible:ring-popYellow cursor-pointer select-none"
                   aria-expanded={openFaq === idx}
                 >
                   <span>{faq.question}</span>
-                  <div className={`w-8 h-8 rounded-full border-2 border-black flex items-center justify-center transform transition-transform ${openFaq === idx ? "rotate-180 bg-popYellow" : "bg-gray-100"}`}>
+                  <div className={`w-8 h-8 rounded-full border-2 border-black flex items-center justify-center transform transition-transform duration-250 ease-[cubic-bezier(0.23,1,0.32,1)] ${openFaq === idx ? "rotate-180 bg-popYellow" : "bg-gray-100"}`}>
                     <FaChevronDown className="text-xs" />
                   </div>
                 </button>
-                {openFaq === idx && (
-                  <div className="px-5 sm:px-6 pb-6 pt-1 text-gray-800 font-medium text-base sm:text-lg leading-relaxed border-t-2 border-black/10">
-                    {faq.answer}
+                <div 
+                  className={`grid transition-[grid-template-rows] duration-250 ease-[cubic-bezier(0.23,1,0.32,1)] ${openFaq === idx ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'}`}
+                >
+                  <div className="overflow-hidden">
+                    <div className="px-5 sm:px-6 pb-6 pt-2 text-gray-800 font-medium text-base sm:text-lg leading-relaxed border-t-2 border-black/10">
+                      {faq.answer}
+                    </div>
                   </div>
-                )}
+                </div>
               </div>
             ))}
           </div>
@@ -662,8 +732,8 @@ export default function Welcome() {
         {/* Footer info */}
         <footer className="max-w-5xl mx-auto mt-12 pt-6 border-t-2 border-black/20 flex flex-wrap items-center justify-between gap-4 text-sm font-bold text-gray-700">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-black font-display text-base">DUAL.AI</span>
-            <span>• Powered by Groq LPU, Meta LLaMA & DeepSeek</span>
+            <span className="font-bold text-black font-display text-base">DUAL ARENA</span>
+            <span>• Powered by Groq LPU, Qwen 3.8 27B & OpenAI GPT-OSS 120B</span>
           </div>
           <div className="flex items-center gap-6">
             <Link to="/login" className="hover:text-black">Login</Link>
